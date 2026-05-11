@@ -50,8 +50,7 @@ class BaseUser(AbstractBaseUser, PermissionsMixin):
 # Separate Role Tables for Record-Keeping
 # ==========================================
 
-class Citizen(models.fields.related.OneToOneField):
-    pass # Replaced below for correct syntax
+
 
 class Citizen(models.Model):
     """
