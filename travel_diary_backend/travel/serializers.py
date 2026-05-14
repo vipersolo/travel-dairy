@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from .models import Destination, Accommodation, TourPackage, Booking, Review
 
 class DestinationSerializer(serializers.ModelSerializer):
@@ -55,3 +56,29 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = '__all__'
+
+
+class BudgetEstimateSerializer(serializers.Serializer):
+    """
+    Validates incoming data for the budget estimation endpoint.
+    Not tied to a database model.
+    """
+    accommodation_id = serializers.IntegerField(required=False, allow_null=True)
+    tour_package_id = serializers.IntegerField(required=False, allow_null=True)
+    check_in_date = serializers.DateField(required=True)
+    check_out_date = serializers.DateField(required=True)
+
+    def validate(self, data):
+        """
+        Cross-field validation to enforce business rules before hitting the Service layer.
+        """
+        acc_id = data.get('accommodation_id')
+        tp_id = data.get('tour_package_id')
+
+        if not acc_id and not tp_id:
+            raise serializers.ValidationError("You must provide either an accommodation_id or a tour_package_id.")
+
+        if data['check_in_date'] >= data['check_out_date']:
+            raise serializers.ValidationError({"check_out_date": "Check-out date must be strictly after the check-in date."})
+
+        return data
