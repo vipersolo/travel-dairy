@@ -5,10 +5,9 @@ import Login from './pages/Login';
 import Destinations from './pages/Destinations';
 import DestinationDetails from './pages/DestinationDetails';
 import PlanTrip from './pages/PlanTrip';
-
+import Dashboard from './pages/Dashboard'
 // Placeholder Pages
 const Home = () => <h2>Welcome to Travel Diary</h2>;
-const Dashboard = () => <h2>User Dashboard</h2>;
 
 const ProtectedRoute = ({ children }) => {
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
