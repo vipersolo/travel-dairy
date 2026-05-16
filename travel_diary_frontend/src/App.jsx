@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import Destinations from './pages/Destinations';
 import DestinationDetails from './pages/DestinationDetails';
+import PlanTrip from './pages/PlanTrip';
 
 // Placeholder Pages
 const Home = () => <h2>Welcome to Travel Diary</h2>;
@@ -35,6 +36,16 @@ function App() {
                         element={
                             <ProtectedRoute>
                                 <Dashboard />
+                            </ProtectedRoute>
+                        } 
+                    />
+
+                    {/*The Booking Route is strictly protected */}
+                    <Route 
+                        path="/destinations/:id/book" 
+                        element={
+                            <ProtectedRoute>
+                                <PlanTrip />
                             </ProtectedRoute>
                         } 
                     />

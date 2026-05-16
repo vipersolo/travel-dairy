@@ -29,7 +29,7 @@ class BookingSerializer(serializers.ModelSerializer):
         model = Booking
         fields = '__all__'
         # Protect internal fields from being overwritten by external requests
-        read_only_fields = ('status', 'total_amount')
+        read_only_fields = ('citizen','status', 'total_amount')
 
     def validate(self, data):
         """

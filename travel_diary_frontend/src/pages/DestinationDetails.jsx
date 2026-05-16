@@ -76,8 +76,8 @@ const DestinationDetails = () => {
                             </div>
                             
                             <div className="d-grid gap-2 mt-4">
-                                {/* This will link to our complex booking form in the next phase */}
-                                <Button variant="primary" size="lg">
+                                {/* Plan trip button */}
+                                <Button as={Link} to={`/destinations/${destination.id}/book`} variant="primary" size="lg">
                                     Plan a Trip Here
                                 </Button>
                             </div>
