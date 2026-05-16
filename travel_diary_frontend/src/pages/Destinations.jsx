@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Row, Col, Card, Spinner, Alert, Button } from 'react-bootstrap';
 import api from '../services/api';
 
@@ -41,7 +42,9 @@ const Destinations = () => {
                                 <Card.Text className="text-truncate">
                                     {dest.description}
                                 </Card.Text>
-                                <Button variant="outline-primary" size="sm">View Details</Button>
+                                <Button as={Link} to={`/destinations/${dest.id}`} variant="outline-primary" size="sm">
+                                    View Details
+                                </Button>
                             </Card.Body>
                             <Card.Footer>
                                 <small className="text-muted">Best time to visit: {dest.best_time_to_visit}</small>

@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Destinations from './pages/Destinations';
+import DestinationDetails from './pages/DestinationDetails';
 
 // Placeholder Pages
 const Home = () => <h2>Welcome to Travel Diary</h2>;
@@ -22,6 +23,10 @@ function App() {
                     {/* Public Routes */}
                     <Route path="/" element={<Home />} />
                     <Route path="/destinations" element={<Destinations />} />
+
+                    {/* Dyanamic Parameter */}
+                    <Route path="/destinations/:id" element={<DestinationDetails />} />
+                    
                     <Route path="/login" element={<Login />} />
                     
                     {/* Protected Routes */}
