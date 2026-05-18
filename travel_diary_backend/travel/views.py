@@ -13,6 +13,7 @@ from .permissions import IsManagerOrReadOnly, IsCitizen
 from .services import BudgetService
 from django.db.models import Case, When
 from rest_framework import status
+from django.db.models import Q
 
 
 
@@ -69,6 +70,24 @@ class AccommodationViewSet(viewsets.ModelViewSet):
     # Locked down: Only Managers can add hotels.
     permission_classes = [IsManagerOrReadOnly]
 
+    def get_queryset(self):
+
+        queryset = Accommodation.objects.select_related(
+            'destination',
+            'manager'
+        )
+
+        user = self.request.user
+
+        # Managers only see their own hotels
+        if user.is_authenticated and hasattr(user, 'manager_profile'):
+
+            return queryset.filter(
+                manager=user.manager_profile
+            )
+
+        # Public users/admin can still see everything
+        return queryset
     
 
 
@@ -79,22 +98,47 @@ class TourPackageViewSet(viewsets.ModelViewSet):
     serializer_class = TourPackageSerializer
     permission_classes = [IsManagerOrReadOnly]
 
+    def get_queryset(self):
+
+        queryset = TourPackage.objects.select_related(
+            'destination',
+            'manager'
+        )
+
+        user = self.request.user
+
+        # Managers only see their own tour packages
+        if user.is_authenticated and hasattr(user, 'manager_profile'):
+
+            return queryset.filter(
+                manager=user.manager_profile
+            )
+
+        # Public users/admin can still see everything
+        return queryset
+
 
 
 class BookingViewSet(viewsets.ModelViewSet):
     queryset = Booking.objects.select_related('citizen', 'accommodation', 'tour_package').all()
     serializer_class = BookingSerializer
-    # Locked down: Only Citizens can book.
-    permission_classes = [IsCitizen]
+    # Locked down: Only Citizens can book change to authenticated users.
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        """
-        Security feature: A citizen should only see THEIR OWN bookings, 
-        not the entire database of bookings.
-        """
         user = self.request.user
+        
+        # 1. Citizens see what they bought
         if user.role == 'CITIZEN':
             return self.queryset.filter(citizen__user=user)
+            
+        # 2. Managers see what they sold
+        if user.role == 'MANAGER':
+            return self.queryset.filter(
+                Q(accommodation__manager__user=user) | 
+                Q(tour_package__manager__user=user)
+            )
+            
         return self.queryset.none()
     
     def perform_create(self, serializer):

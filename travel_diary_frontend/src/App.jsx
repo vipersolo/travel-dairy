@@ -6,8 +6,14 @@ import Destinations from './pages/Destinations';
 import DestinationDetails from './pages/DestinationDetails';
 import PlanTrip from './pages/PlanTrip';
 import Dashboard from './pages/Dashboard'
+import ManagerRoute from './components/ManagerRoute';
+import ManagerLayout from './components/ManagerLayout';
+
+
+
 // Placeholder Pages
 const Home = () => <h2>Welcome to Travel Diary</h2>;
+const ManagerDashboard = () => <h2>Manager Business Dashboard</h2>;
 
 const ProtectedRoute = ({ children }) => {
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -48,6 +54,20 @@ function App() {
                             </ProtectedRoute>
                         } 
                     />
+                    
+                    {/* --- MANAGER PORTAL ROUTES (Wrapped in Manager Layout) --- */}
+                    <Route path="/manager/*" element={
+                        <ManagerRoute>
+                            <ManagerLayout>
+                                <Routes>
+                                    {/* Maps to /manager/dashboard */}
+                                    <Route path="/dashboard" element={<ManagerDashboard />} />
+                                    {/* We will add /accommodations and /packages here next */}
+                                </Routes>
+                            </ManagerLayout>
+                        </ManagerRoute>
+                    } />
+                    
                 </Routes>
             </Layout>
         </Router>

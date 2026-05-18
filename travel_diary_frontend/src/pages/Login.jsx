@@ -27,11 +27,18 @@ const Login = () => {
             dispatch(loginSuccess({
                 access: response.data.access,
                 refresh: response.data.refresh,
-                user: { email } // You can expand this to fetch full user profile later
+                user: { 
+                    email: response.data.email,
+                    role: response.data.role 
+                }
             }));
             
-            // Redirect to dashboard on success
-            navigate('/dashboard');
+            // NEW: Intelligent Redirect based on role
+            if (response.data.role === 'MANAGER') {
+                navigate('/manager/dashboard');
+            } else {
+                navigate('/dashboard');
+            }
         } catch (err) {
             setError(err.response?.data?.detail || 'Invalid email or password.');
         } finally {
