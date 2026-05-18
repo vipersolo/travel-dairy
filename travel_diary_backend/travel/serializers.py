@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from datetime import timedelta
 
 from .models import Destination, Accommodation, TourPackage, Booking, Review
 
@@ -40,22 +41,32 @@ class BookingSerializer(serializers.ModelSerializer):
         read_only_fields = ('citizen','status', 'total_amount')
 
     def validate(self, data):
-        """
-        Custom object-level validation to ensure strict business rules.
-        """
-        has_accommodation = data.get('accommodation') is not None
-        has_tour_package = data.get('tour_package') is not None
+        check_in = data.get('check_in_date')
+        check_out = data.get('check_out_date')
+        accommodation = data.get('accommodation')
+        tour_package = data.get('tour_package')
 
-        if has_accommodation and has_tour_package:
-            raise serializers.ValidationError("A booking cannot be for both an accommodation and a tour package.")
-        if not has_accommodation and not has_tour_package:
-            raise serializers.ValidationError("A booking must include either an accommodation or a tour package.")
-        
-        # Ensure Check-out is after Check-in
-        if data.get('check_in_date') and data.get('check_out_date'):
-            if data['check_in_date'] >= data['check_out_date']:
-                raise serializers.ValidationError("Check-out date must be after check-in date.")
-                
+        # 1. Ensure dates make chronological sense
+        if check_in and check_out and check_in >= check_out:
+            raise serializers.ValidationError("Check-out date must be after check-in date.")
+
+        # 2. Must select exactly one inventory type
+        if accommodation and tour_package:
+            raise serializers.ValidationError("Cannot book both an accommodation and a tour package in the same booking.")
+        if not accommodation and not tour_package:
+            raise serializers.ValidationError("Must select either an accommodation or a tour package.")
+
+        # 3. NEW: Strict Date Validation for Tour Packages
+        if tour_package and check_in and check_out:
+            # Calculate what the check-out date SHOULD be
+            expected_check_out = check_in + timedelta(days=tour_package.duration_days)
+            
+            if check_out != expected_check_out:
+                raise serializers.ValidationError(
+                    f"Invalid dates. '{tour_package.name}' is strictly a {tour_package.duration_days}-day package. "
+                    f"If you start on {check_in}, your check-out date must be {expected_check_out}."
+                )
+
         return data
 
 class ReviewSerializer(serializers.ModelSerializer):
