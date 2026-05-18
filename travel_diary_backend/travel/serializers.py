@@ -21,10 +21,13 @@ class AccommodationSerializer(serializers.ModelSerializer):
 
 class TourPackageSerializer(serializers.ModelSerializer):
     destination_name = serializers.CharField(source='destination.name', read_only=True)
+    manager_company = serializers.CharField(source='manager.company_name', read_only=True)
     
     class Meta:
         model = TourPackage
         fields = '__all__'
+        read_only_fields = ('manager',)
+
 
 class BookingSerializer(serializers.ModelSerializer):
     accommodation_name = serializers.CharField(source='accommodation.name', read_only=True)

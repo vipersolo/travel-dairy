@@ -2,7 +2,7 @@ from django.core.cache import cache
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .ml_services import RecommendationService
-from rest_framework import viewsets, permissions, serializers
+from rest_framework import viewsets, permissions, serializers, status
 from .serializers import BudgetEstimateSerializer
 from .models import Destination, Accommodation, TourPackage, Booking, Review
 from .serializers import (
@@ -100,24 +100,21 @@ class TourPackageViewSet(viewsets.ModelViewSet):
     permission_classes = [IsManagerOrReadOnly]
 
     def get_queryset(self):
-
-        queryset = TourPackage.objects.select_related(
-            'destination',
-            'manager'
-        )
-
-        user = self.request.user
-
-        # Managers only see their own tour packages
-        if user.is_authenticated and hasattr(user, 'manager_profile'):
-
-            return queryset.filter(
-                manager=user.manager_profile
-            )
-
-        # Public users/admin can still see everything
+        # 1. Grab the base optimized queryset
+        queryset = super().get_queryset()
+        
+        # 2. Safely parse the query parameter
+        my_listings = self.request.query_params.get('my_listings', '').strip().lower() == 'true'
+        
+        # 3. Bulletproof relational filtering for Managers
+        if my_listings and self.request.user.is_authenticated and getattr(self.request.user, 'role', '') == 'MANAGER':
+            return queryset.filter(manager__user=self.request.user)
+            
         return queryset
 
+    def perform_create(self, serializer):
+        # Auto-assign the manager profile based on the JWT token
+        serializer.save(manager=self.request.user.manager_profile)
 
 
 class BookingViewSet(viewsets.ModelViewSet):
@@ -232,6 +229,47 @@ class BookingViewSet(viewsets.ModelViewSet):
         # 4. Return the updated data to the frontend
         serializer = self.get_serializer(booking)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'])
+    def update_status(self, request, pk=None):
+        """
+        Endpoint: POST /api/v1/travel/bookings/{id}/update_status/
+        Allows a Manager to update the status of an incoming reservation.
+        """
+        user = request.user
+        
+        # 1. Gatekeeping: Only Managers can use this specific endpoint
+        if getattr(user, 'role', '') != 'MANAGER':
+            return Response(
+                {"error": "Only business managers can update booking statuses."}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # 2. Fetch the booking safely (get_object relies on our secure get_queryset)
+        booking = self.get_object()
+        
+        # 3. Extract and validate the new status
+        new_status = request.data.get('status')
+        valid_statuses = [choice[0] for choice in Booking.BookingStatus.choices]
+        
+        if new_status not in valid_statuses:
+            return Response({"error": "Invalid status provided."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        # 4. State Machine logic: Prevent reviving a completed or cancelled trip
+        if booking.status in [Booking.BookingStatus.COMPLETED, Booking.BookingStatus.CANCELLED]:
+            return Response(
+                {"error": f"Cannot alter a booking that is already {booking.status}."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 5. Save the change and return the fresh data
+        booking.status = new_status
+        booking.save()
+        
+        serializer = self.get_serializer(booking)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.select_related('citizen', 'destination', 'accommodation').all()

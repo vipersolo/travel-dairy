@@ -6,15 +6,17 @@ import Destinations from './pages/Destinations';
 import DestinationDetails from './pages/DestinationDetails';
 import PlanTrip from './pages/PlanTrip';
 import Dashboard from './pages/Dashboard'
+import ManagerDashboard from './pages/manager/ManagerDashboard';
 import ManagerRoute from './components/ManagerRoute';
 import ManagerLayout from './components/ManagerLayout';
 import ManagerAccommodations from './pages/manager/ManagerAccommodations';
+import ManagerPackages from './pages/manager/ManagerPackages';
+
 
 
 
 // Placeholder Pages
 const Home = () => <h2>Welcome to Travel Diary</h2>;
-const ManagerDashboard = () => <h2>Manager Business Dashboard</h2>;
 
 const ProtectedRoute = ({ children }) => {
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -24,55 +26,66 @@ const ProtectedRoute = ({ children }) => {
 function App() {
     return (
         <Router>
-            {/* The Layout component provides the Navbar globally */}
-            <Layout>
-                <Routes>
-                    {/* Public Routes */}
-                    <Route path="/" element={<Home />} />
-                    <Route path="/destinations" element={<Destinations />} />
+            <Routes>
+                
+                {/* ==========================================
+                    B2B MANAGER PORTAL ROUTES
+                ========================================== */}
+                {/* 
+                    React Router v6 matches this specific path first.
+                    Everything under /manager/ will ONLY get the ManagerLayout.
+                */}
+                <Route path="/manager/*" element={
+                    <ManagerRoute>
+                        <ManagerLayout>
+                            <Routes>
+                                {/* Note: Nested routes shouldn't have a leading slash */}
+                                <Route path="dashboard" element={<ManagerDashboard />} />
+                                <Route path="accommodations" element={<ManagerAccommodations />} />
+                                <Route path="packages" element={<ManagerPackages />} />
+                            </Routes>
+                        </ManagerLayout>
+                    </ManagerRoute>
+                } />
 
-                    {/* Dyanamic Parameter */}
-                    <Route path="/destinations/:id" element={<DestinationDetails />} />
-                    
-                    <Route path="/login" element={<Login />} />
-                    
-                    {/* Protected Routes */}
-                    <Route 
-                        path="/dashboard" 
-                        element={
-                            <ProtectedRoute>
-                                <Dashboard />
-                            </ProtectedRoute>
-                        } 
-                    />
+                {/* ==========================================
+                    B2C CITIZEN & PUBLIC ROUTES
+                ========================================== */}
+                {/* 
+                    The /* wildcard catches everything else.
+                    These pages get the standard public Layout with the top Navbar.
+                */}
+                <Route path="/*" element={
+                    <Layout>
+                        <Routes>
+                            {/* Public */}
+                            <Route path="/" element={<Home />} />
+                            <Route path="/destinations" element={<Destinations />} />
+                            <Route path="/destinations/:id" element={<DestinationDetails />} />
+                            <Route path="/login" element={<Login />} />
+                            
+                            {/* Protected Citizen */}
+                            <Route 
+                                path="/dashboard" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Dashboard />
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/destinations/:id/book" 
+                                element={
+                                    <ProtectedRoute>
+                                        <PlanTrip />
+                                    </ProtectedRoute>
+                                } 
+                            />
+                        </Routes>
+                    </Layout>
+                } />
 
-                    {/*The Booking Route is strictly protected */}
-                    <Route 
-                        path="/destinations/:id/book" 
-                        element={
-                            <ProtectedRoute>
-                                <PlanTrip />
-                            </ProtectedRoute>
-                        } 
-                    />
-                    
-                    {/* --- MANAGER PORTAL ROUTES (Wrapped in Manager Layout) --- */}
-                    <Route path="/manager/*" element={
-                        <ManagerRoute>
-                            <ManagerLayout>
-                                <Routes>
-                                    {/* Maps to /manager/dashboard */}
-                                    <Route path="/dashboard" element={<ManagerDashboard />} />
-                                    
-                                    <Route path="/accommodations" element={<ManagerAccommodations />} />
-
-                                </Routes>
-                            </ManagerLayout>
-                        </ManagerRoute>
-                    } />
-                    
-                </Routes>
-            </Layout>
+            </Routes>
         </Router>
     );
 }
