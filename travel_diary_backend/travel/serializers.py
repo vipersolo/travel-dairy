@@ -25,6 +25,9 @@ class TourPackageSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class BookingSerializer(serializers.ModelSerializer):
+    accommodation_name = serializers.CharField(source='accommodation.name', read_only=True)
+    tour_package_name = serializers.CharField(source='tour_package.title', read_only=True)
+
     class Meta:
         model = Booking
         fields = '__all__'

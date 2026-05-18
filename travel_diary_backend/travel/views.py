@@ -12,6 +12,7 @@ from .serializers import (
 from .permissions import IsManagerOrReadOnly, IsCitizen
 from .services import BudgetService
 from django.db.models import Case, When
+from rest_framework import status
 
 
 
@@ -77,6 +78,8 @@ class TourPackageViewSet(viewsets.ModelViewSet):
     queryset = TourPackage.objects.select_related('destination', 'manager').all()
     serializer_class = TourPackageSerializer
     permission_classes = [IsManagerOrReadOnly]
+
+
 
 class BookingViewSet(viewsets.ModelViewSet):
     queryset = Booking.objects.select_related('citizen', 'accommodation', 'tour_package').all()
@@ -153,6 +156,37 @@ class BookingViewSet(viewsets.ModelViewSet):
         except ValueError as e:
             # Catching any edge-case math errors from the Service layer
             return Response({"error": str(e)}, status=400)
+        
+
+    @action(detail=True, methods=['post'])
+    def cancel(self, request, pk=None):
+        """
+        Endpoint: POST /api/v1/travel/bookings/{id}/cancel/
+        Safely cancels a booking if it is in a valid state.
+        """
+        # 1. Fetch the specific booking (get_object ensures it belongs to the logged-in user)
+        booking = self.get_object()
+
+        # 2. State Machine Gatekeeping
+        if booking.status == Booking.BookingStatus.CANCELLED:
+            return Response(
+                {"error": "This booking is already cancelled."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        if booking.status == Booking.BookingStatus.COMPLETED:
+            return Response(
+                {"error": "Cannot cancel a trip that has already been completed."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 3. Perform the State Change
+        booking.status = Booking.BookingStatus.CANCELLED
+        booking.save()
+
+        # 4. Return the updated data to the frontend
+        serializer = self.get_serializer(booking)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.select_related('citizen', 'destination', 'accommodation').all()
