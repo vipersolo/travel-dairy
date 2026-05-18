@@ -31,6 +31,10 @@ api.interceptors.response.use(
             // If the token is expired, clear storage and force login
             localStorage.removeItem('access_token');
             localStorage.removeItem('refresh_token');
+            
+            // NEW: Make sure we clear the user data too!
+            localStorage.removeItem('user'); 
+            
             window.location.href = '/login'; 
         }
         return Promise.reject(error);
