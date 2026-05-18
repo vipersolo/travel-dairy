@@ -16,6 +16,8 @@ class AccommodationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Accommodation
         fields = '__all__'
+        # NEW: Force the manager field to be read-only so the frontend doesn't need to pass it
+        read_only_fields = ('manager',)
 
 class TourPackageSerializer(serializers.ModelSerializer):
     destination_name = serializers.CharField(source='destination.name', read_only=True)

@@ -8,6 +8,7 @@ import PlanTrip from './pages/PlanTrip';
 import Dashboard from './pages/Dashboard'
 import ManagerRoute from './components/ManagerRoute';
 import ManagerLayout from './components/ManagerLayout';
+import ManagerAccommodations from './pages/manager/ManagerAccommodations';
 
 
 
@@ -62,7 +63,9 @@ function App() {
                                 <Routes>
                                     {/* Maps to /manager/dashboard */}
                                     <Route path="/dashboard" element={<ManagerDashboard />} />
-                                    {/* We will add /accommodations and /packages here next */}
+                                    
+                                    <Route path="/accommodations" element={<ManagerAccommodations />} />
+
                                 </Routes>
                             </ManagerLayout>
                         </ManagerRoute>

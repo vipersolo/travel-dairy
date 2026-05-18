@@ -71,23 +71,24 @@ class AccommodationViewSet(viewsets.ModelViewSet):
     permission_classes = [IsManagerOrReadOnly]
 
     def get_queryset(self):
-
-        queryset = Accommodation.objects.select_related(
-            'destination',
-            'manager'
-        )
-
-        user = self.request.user
-
-        # Managers only see their own hotels
-        if user.is_authenticated and hasattr(user, 'manager_profile'):
-
-            return queryset.filter(
-                manager=user.manager_profile
-            )
-
-        # Public users/admin can still see everything
+        # 1. Grab the base queryset (which has the select_related optimization)
+        queryset = super().get_queryset()
+        
+        # 2. Safely extract and parse the query parameter to handle whitespace or uppercase
+        my_listings = self.request.query_params.get('my_listings', '').strip().lower() == 'true'
+        
+        # 3. Check if the user is authenticated, requesting their listings, and is a MANAGER
+        if my_listings and self.request.user.is_authenticated and getattr(self.request.user, 'role', '') == 'MANAGER':
+            
+            # 4. Bulletproof relational filtering: Find accommodations where the 
+            # associated manager's base user ID matches the logged-in user's ID.
+            return queryset.filter(manager__user=self.request.user)
+            
         return queryset
+
+    def perform_create(self, serializer):
+        # Auto-assign the manager profile based on the JWT token of the requester
+        serializer.save(manager=self.request.user.manager_profile)
     
 
 
