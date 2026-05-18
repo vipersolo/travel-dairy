@@ -19,7 +19,7 @@ from django.urls import path,include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/auth/', include('users.urls')),
+    path('api/v1/users/', include('users.urls')),
     # Versioning your API (v1) is a crucial industry standard for future-proofing
     path('api/v1/travel/', include('travel.urls')),
 ]

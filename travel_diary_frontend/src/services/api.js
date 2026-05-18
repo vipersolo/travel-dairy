@@ -1,42 +1,71 @@
-// src/services/api.js
 import axios from 'axios';
 
-// Create a customized Axios instance
 const api = axios.create({
-    baseURL: 'http://127.0.0.1:8000/api/v1/', // Pointing to your Django backend
-    headers: {
-        'Content-Type': 'application/json',
-    },
+    // FIX 1: Added v1/ so it matches your Django urls.py exactly
+    baseURL: 'http://127.0.0.1:8000/api/v1/',
 });
 
-// Request Interceptor: Automatically attach the JWT token
+// ---------------- REQUEST INTERCEPTOR ----------------
+// Automatically attach access token to every request
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('access_token');
+
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+
         return config;
     },
-    (error) => {
-        return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Handle 401 Unauthorized globally (e.g., expired token)
+// ---------------- RESPONSE INTERCEPTOR ----------------
+// Handle expired access token automatically
 api.interceptors.response.use(
     (response) => response,
-    (error) => {
-        if (error.response && error.response.status === 401) {
-            // If the token is expired, clear storage and force login
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-            
-            // NEW: Make sure we clear the user data too!
-            localStorage.removeItem('user'); 
-            
-            window.location.href = '/login'; 
+
+    async (error) => {
+        const originalRequest = error.config;
+
+        // If token expired and request not retried yet
+        if (
+            error.response &&
+            error.response.status === 401 &&
+            !originalRequest._retry
+        ) {
+            originalRequest._retry = true;
+
+            try {
+                const refreshToken = localStorage.getItem('refresh_token');
+
+                // FIX 2: Use vanilla axios here! This prevents an infinite loop 
+                // if the refresh token itself is also expired.
+                const response = await axios.post('http://127.0.0.1:8000/api/v1/users/refresh/', {
+                    refresh: refreshToken,
+                });
+
+                // Save new access token
+                localStorage.setItem('access_token', response.data.access);
+
+                // Update authorization header
+                originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
+
+                // Retry original request
+                return api(originalRequest);
+
+            } catch (refreshError) {
+                // Refresh token also expired or invalid
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                localStorage.removeItem('user');
+
+                window.location.href = '/login';
+
+                return Promise.reject(refreshError);
+            }
         }
+
         return Promise.reject(error);
     }
 );

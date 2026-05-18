@@ -17,6 +17,9 @@ from django.db.models import Q
 from users.permissions import IsModerator
 from .serializers import ModeratorReviewSerializer, PublicReviewSerializer
 from users.models import Citizen
+from rest_framework.views import APIView
+from django.db.models import Sum
+from users.models import BaseUser, Manager, Citizen
 
 
 class DestinationViewSet(viewsets.ModelViewSet):
@@ -344,3 +347,45 @@ class ModeratorReviewViewSet(viewsets.ReadOnlyModelViewSet):
             "message": f"Review {status_text} successfully.",
             "is_visible": review.is_visible
         }, status=status.HTTP_200_OK)
+    
+
+class ModeratorAnalyticsView(APIView):
+    """
+    Endpoint: GET /api/v1/travel/moderator/analytics/
+    Aggregates platform-wide statistics using database-level math for high performance.
+    """
+    permission_classes = [IsModerator]
+
+    def get(self, request):
+        # 1. Financial Aggregation (PostgreSQL does the heavy lifting here)
+        revenue_agg = Booking.objects.filter(
+            status__in=[Booking.BookingStatus.CONFIRMED, Booking.BookingStatus.COMPLETED]
+        ).aggregate(total=Sum('total_amount'))
+        
+        # If there are no bookings yet, Sum returns None, so we default to 0.00
+        total_revenue = revenue_agg['total'] or 0.00
+
+        # 2. Booking Volume
+        total_bookings = Booking.objects.count()
+        pending_bookings = Booking.objects.filter(status=Booking.BookingStatus.PENDING).count()
+
+        # 3. User Demographics
+        total_users = BaseUser.objects.count()
+        total_managers = Manager.objects.count()
+        total_citizens = Citizen.objects.count()
+
+        # 4. Construct the custom JSON payload
+        return Response({
+            "financials": {
+                "total_platform_revenue": total_revenue,
+            },
+            "bookings": {
+                "total_volume": total_bookings,
+                "action_required": pending_bookings,
+            },
+            "users": {
+                "total": total_users,
+                "businesses": total_managers,
+                "travelers": total_citizens
+            }
+        })

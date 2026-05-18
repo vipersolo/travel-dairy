@@ -16,12 +16,13 @@ import ManagerPackages from './pages/manager/ManagerPackages';
 import Home from './pages/Home';
 import ModeratorVerification from './pages/moderator/ModeratorVerification';
 import ModeratorReviews from './pages/moderator/ModeratorReviews';
-
+import ModeratorDashboard from './pages/moderator/ModeratorDashboard';
+import Register from './pages/Register';
 
 
 
 // Placeholder Pages
-const ModeratorDashboard = () => <h2>Platform Analytics Dashboard</h2>;
+
 
 
 const ProtectedRoute = ({ children }) => {
@@ -87,7 +88,8 @@ function App() {
                             <Route path="/destinations" element={<Destinations />} />
                             <Route path="/destinations/:id" element={<DestinationDetails />} />
                             <Route path="/login" element={<Login />} />
-                            
+                            <Route path="/register" element={<Register />} />
+
                             {/* Protected Citizen */}
                             <Route 
                                 path="/dashboard" 

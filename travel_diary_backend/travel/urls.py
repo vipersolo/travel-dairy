@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     DestinationViewSet, AccommodationViewSet,
-    TourPackageViewSet, BookingViewSet, ReviewViewSet, ModeratorReviewViewSet
+    TourPackageViewSet, BookingViewSet, ReviewViewSet, ModeratorReviewViewSet, ModeratorAnalyticsView
 )
 
 
@@ -18,5 +18,6 @@ router.register(r'reviews', ReviewViewSet)
 router.register(r'moderator/reviews', ModeratorReviewViewSet, basename='moderator-reviews')
 
 urlpatterns = [
+    path('moderator/analytics/', ModeratorAnalyticsView.as_view(), name='moderator-analytics'),
     path('', include(router.urls)),
 ]

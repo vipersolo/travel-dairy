@@ -5,6 +5,14 @@ from rest_framework.response import Response
 from .models import Manager
 from .serializers import ManagerVerificationSerializer
 from .permissions import IsModerator
+from rest_framework import generics
+from rest_framework.permissions import AllowAny
+from .models import BaseUser
+from .serializers import RegisterSerializer
+
+
+
+
 
 class ModeratorManagerViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -31,3 +39,16 @@ class ModeratorManagerViewSet(viewsets.ReadOnlyModelViewSet):
             "message": "Verification status updated.",
             "is_verified": manager.is_verified
         }, status=status.HTTP_200_OK)
+    
+
+
+
+
+class RegisterView(generics.CreateAPIView):
+    """
+    Endpoint: POST /api/v1/users/register/
+    Public endpoint for new users to create an account.
+    """
+    queryset = BaseUser.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = RegisterSerializer

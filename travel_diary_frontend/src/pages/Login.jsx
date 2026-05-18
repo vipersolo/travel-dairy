@@ -21,7 +21,7 @@ const Login = () => {
 
         try {
             // Hitting the Django JWT endpoint
-            const response = await api.post('auth/login/', { email, password });
+            const response = await api.post('users/login/', { email, password });
             
             // Dispatching to Redux to update global state
             dispatch(loginSuccess({
