@@ -20,6 +20,7 @@ from users.models import Citizen
 from rest_framework.views import APIView
 from django.db.models import Sum
 from users.models import BaseUser, Manager, Citizen
+from rest_framework.exceptions import PermissionDenied
 
 
 class DestinationViewSet(viewsets.ModelViewSet):
@@ -134,8 +135,13 @@ class AccommodationViewSet(viewsets.ModelViewSet):
         return queryset
 
     def perform_create(self, serializer):
-        # Auto-assign the manager profile based on the JWT token of the requester
-        serializer.save(manager=self.request.user.manager_profile)
+        manager_profile = self.request.user.manager_profile
+        
+        # NEW: The Verification Gatekeeper
+        if not manager_profile.is_verified:
+            raise PermissionDenied("Your business account must be verified by an Administrator before you can list accommodations.")
+            
+        serializer.save(manager=manager_profile)
     
 
 
@@ -160,8 +166,13 @@ class TourPackageViewSet(viewsets.ModelViewSet):
         return queryset
 
     def perform_create(self, serializer):
-        # Auto-assign the manager profile based on the JWT token
-        serializer.save(manager=self.request.user.manager_profile)
+        manager_profile = self.request.user.manager_profile
+        
+        # NEW: The Verification Gatekeeper
+        if not manager_profile.is_verified:
+            raise PermissionDenied("Your business account must be verified by an Administrator before you can list tour packages.")
+            
+        serializer.save(manager=manager_profile)
 
 
 class BookingViewSet(viewsets.ModelViewSet):
