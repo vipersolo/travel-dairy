@@ -36,8 +36,10 @@ const Login = () => {
             // NEW: Intelligent Redirect based on role
             if (response.data.role === 'MANAGER') {
                 navigate('/manager/dashboard');
+            } else if (response.data.role === 'MODERATOR') {
+                navigate('/moderator/dashboard');
             } else {
-                navigate('/dashboard');
+                navigate('/dashboard'); // Standard Citizen
             }
         } catch (err) {
             setError(err.response?.data?.detail || 'Invalid email or password.');

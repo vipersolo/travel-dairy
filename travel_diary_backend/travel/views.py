@@ -14,7 +14,9 @@ from .services import BudgetService
 from django.db.models import Case, When
 from rest_framework import status
 from django.db.models import Q
-
+from users.permissions import IsModerator
+from .serializers import ModeratorReviewSerializer, PublicReviewSerializer
+from users.models import Citizen
 
 
 class DestinationViewSet(viewsets.ModelViewSet):
@@ -62,6 +64,48 @@ class DestinationViewSet(viewsets.ModelViewSet):
         # Serialize and return the data
         serializer = self.get_serializer(similar_destinations, many=True)
         return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'])
+    def reviews(self, request, pk=None):
+        """
+        Endpoint: GET /api/v1/travel/destinations/{id}/reviews/
+        Fetches all VISIBLE reviews for this destination.
+        """
+        destination = self.get_object()
+        # Only fetch reviews that haven't been soft-deleted by a Moderator
+        reviews = Review.objects.filter(destination=destination, is_visible=True)
+        serializer = PublicReviewSerializer(reviews, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def add_review(self, request, pk=None):
+        """
+        Endpoint: POST /api/v1/travel/destinations/{id}/add_review/
+        Allows a logged-in Citizen to leave a review.
+        """
+        destination = self.get_object()
+        user = request.user
+
+        # 1. Gatekeeping: Only Citizens can review
+        if not user.is_authenticated or getattr(user, 'role', '') != 'CITIZEN':
+            return Response({"error": "Only registered travelers can leave reviews."}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            citizen_profile = Citizen.objects.get(user=user)
+        except Citizen.DoesNotExist:
+            return Response({"error": "Traveler profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # 2. Gatekeeping: Prevent duplicate reviews
+        if Review.objects.filter(citizen=citizen_profile, destination=destination).exists():
+            return Response({"error": "You have already reviewed this destination."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 3. Save the review
+        serializer = PublicReviewSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(citizen=citizen_profile, destination=destination)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class AccommodationViewSet(viewsets.ModelViewSet):
     # Industry Standard: select_related prevents the N+1 query problem
@@ -275,3 +319,28 @@ class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.select_related('citizen', 'destination', 'accommodation').all()
     serializer_class = ReviewSerializer
     permission_classes = [IsCitizen]
+
+
+class ModeratorReviewViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Endpoint: /api/v1/travel/moderator/reviews/
+    Centralized firehose of all platform reviews for moderation.
+    """
+    queryset = Review.objects.select_related('citizen__user', 'destination').all()
+    serializer_class = ModeratorReviewSerializer
+    permission_classes = [IsModerator]
+
+    @action(detail=True, methods=['post'])
+    def toggle_visibility(self, request, pk=None):
+        """
+        Soft-deletes (or restores) a review by toggling is_visible.
+        """
+        review = self.get_object()
+        review.is_visible = not review.is_visible
+        review.save()
+        
+        status_text = "restored" if review.is_visible else "removed"
+        return Response({
+            "message": f"Review {status_text} successfully.",
+            "is_visible": review.is_visible
+        }, status=status.HTTP_200_OK)

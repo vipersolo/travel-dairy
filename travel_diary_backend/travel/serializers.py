@@ -90,3 +90,21 @@ class BudgetEstimateSerializer(serializers.Serializer):
             raise serializers.ValidationError({"check_out_date": "Check-out date must be strictly after the check-in date."})
 
         return data
+    
+class ModeratorReviewSerializer(serializers.ModelSerializer):
+    author_email = serializers.CharField(source='citizen.user.email', read_only=True)
+    target_name = serializers.CharField(source='destination.name', read_only=True)
+
+    class Meta:
+        model = Review
+        fields = ['id', 'author_email', 'target_name', 'rating', 'comment', 'is_visible', 'created_at']
+
+class PublicReviewSerializer(serializers.ModelSerializer):
+    # Safely expose the user's email or name without exposing their whole account
+    author_email = serializers.CharField(source='citizen.user.email', read_only=True)
+
+    class Meta:
+        model = Review
+        fields = ['id', 'author_email', 'rating', 'comment', 'created_at']
+        # The frontend doesn't need to send the citizen or destination IDs; 
+        # the backend will determine them automatically.

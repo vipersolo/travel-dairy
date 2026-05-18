@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
+from users.models import Citizen
 
 # ==========================================
 # Abstract Base Model
@@ -97,17 +98,21 @@ class Booking(TimeStampedModel):
     def __str__(self):
         return f"Booking {self.id} by {self.citizen.first_name} - {self.status}"
 
-class Review(TimeStampedModel):
-    citizen = models.ForeignKey('users.Citizen', on_delete=models.CASCADE, related_name='reviews')
-    destination = models.ForeignKey(Destination, on_delete=models.CASCADE, related_name='reviews', null=True, blank=True)
-    accommodation = models.ForeignKey(Accommodation, on_delete=models.CASCADE, related_name='reviews', null=True, blank=True)
-    
-    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+
+class Review(models.Model):
+    citizen = models.ForeignKey(Citizen, on_delete=models.CASCADE, related_name='reviews')
+    # It links to Destination, so we use 'destination' in our Meta class below
+    destination = models.ForeignKey(Destination, on_delete=models.CASCADE, related_name='reviews')
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
     comment = models.TextField()
+    is_visible = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        # Prevent a user from reviewing the exact same accommodation twice
-        unique_together = ['citizen', 'accommodation']
+        ordering = ['-created_at']
+        # FIXED: Changed 'accommodation' to 'destination' to match the field above
+        unique_together = ['citizen', 'destination']
 
     def __str__(self):
-        return f"Review by {self.citizen.first_name} - {self.rating} Stars"
+        # Using citizen.user.email is generally safer here depending on how your BaseUser is set up
+        return f"Review by Citizen #{self.citizen.id} - {self.rating} Stars"

@@ -9,14 +9,20 @@ import Dashboard from './pages/Dashboard'
 import ManagerDashboard from './pages/manager/ManagerDashboard';
 import ManagerRoute from './components/ManagerRoute';
 import ManagerLayout from './components/ManagerLayout';
+import ModeratorLayout from './components/ModeratorLayout';
+import ModeratorRoute from './components/ModeratorRoute';
 import ManagerAccommodations from './pages/manager/ManagerAccommodations';
 import ManagerPackages from './pages/manager/ManagerPackages';
+import Home from './pages/Home';
+import ModeratorVerification from './pages/moderator/ModeratorVerification';
+import ModeratorReviews from './pages/moderator/ModeratorReviews';
 
 
 
 
 // Placeholder Pages
-const Home = () => <h2>Welcome to Travel Diary</h2>;
+const ModeratorDashboard = () => <h2>Platform Analytics Dashboard</h2>;
+
 
 const ProtectedRoute = ({ children }) => {
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -46,6 +52,24 @@ function App() {
                             </Routes>
                         </ManagerLayout>
                     </ManagerRoute>
+                } />
+
+                {/* ==========================================
+                    B2A ADMIN / MODERATOR ROUTES
+                ========================================== */}
+                <Route path="/moderator/*" element={
+                    <ModeratorRoute>
+                        <ModeratorLayout>
+                            <Routes>
+                                <Route path="dashboard" element={<ModeratorDashboard />} />
+                                
+                                <Route path="verification" element={<ModeratorVerification />} />
+
+                                <Route path="reviews" element={<ModeratorReviews />} />
+
+                            </Routes>
+                        </ModeratorLayout>
+                    </ModeratorRoute>
                 } />
 
                 {/* ==========================================
