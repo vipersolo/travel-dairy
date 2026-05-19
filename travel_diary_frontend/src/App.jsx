@@ -18,6 +18,7 @@ import ModeratorVerification from './pages/moderator/ModeratorVerification';
 import ModeratorReviews from './pages/moderator/ModeratorReviews';
 import ModeratorDashboard from './pages/moderator/ModeratorDashboard';
 import Register from './pages/Register';
+import ModeratorDestinations from './pages/moderator/ModeratorDestinations';
 
 
 
@@ -67,6 +68,8 @@ function App() {
                                 <Route path="verification" element={<ModeratorVerification />} />
 
                                 <Route path="reviews" element={<ModeratorReviews />} />
+
+                                <Route path="destinations" element={<ModeratorDestinations />} />
 
                             </Routes>
                         </ModeratorLayout>

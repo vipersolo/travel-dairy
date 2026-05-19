@@ -35,7 +35,7 @@ const Destinations = () => {
                     <Col key={dest.id}>
                         <Card className="h-100 shadow-sm">
                             {/* Placeholder image, we can add real image uploads later */}
-                            <Card.Img variant="top" src={`https://source.unsplash.com/800x600/?${dest.name},travel`} />
+                            <Card.Img variant="top" src={dest?.image} />
                             <Card.Body>
                                 <Card.Title>{dest.name}</Card.Title>
                                 <Card.Subtitle className="mb-2 text-muted">{dest.country}</Card.Subtitle>

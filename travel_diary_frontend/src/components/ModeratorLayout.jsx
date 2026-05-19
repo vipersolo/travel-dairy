@@ -34,6 +34,11 @@ const ModeratorLayout = ({ children }) => {
                         <Nav.Link as={Link} to="/moderator/dashboard" className={`rounded ${isActive('/moderator/dashboard')}`}>
                             📈 Platform Analytics
                         </Nav.Link>
+                        
+                        {/* NEW: Manage Destinations Link added here */}
+                        <Nav.Link as={Link} to="/moderator/destinations" className={`rounded ${isActive('/moderator/destinations')}`}>
+                            🌍 Manage Destinations
+                        </Nav.Link>
                     </Nav>
 
                     <div className="text-muted text-uppercase fw-bold mb-3" style={{ fontSize: '0.8rem' }}>

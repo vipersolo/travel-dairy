@@ -23,6 +23,9 @@ from users.models import BaseUser, Manager, Citizen
 from rest_framework.exceptions import PermissionDenied
 import stripe
 from django.conf import settings
+from users.permissions import IsModeratorOrReadOnly
+
+
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -31,7 +34,7 @@ class DestinationViewSet(viewsets.ModelViewSet):
     queryset = Destination.objects.all()
     serializer_class = DestinationSerializer
     # Admins should manage destinations, but for now, let anyone view them
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsModeratorOrReadOnly]
 
     @action(detail=True, methods=['get'])
     def recommendations(self, request, pk=None):
