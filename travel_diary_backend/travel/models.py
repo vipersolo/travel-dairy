@@ -94,6 +94,8 @@ class Booking(TimeStampedModel):
         default=BookingStatus.PENDING,
         db_index=True  # Indexed because we will frequently filter "Active" or "Past" bookings
     )
+    is_paid = models.BooleanField(default=False)
+    stripe_payment_intent = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return f"Booking {self.id} by {self.citizen.first_name} - {self.status}"

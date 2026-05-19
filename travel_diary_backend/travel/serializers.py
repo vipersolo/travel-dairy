@@ -36,9 +36,10 @@ class BookingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Booking
-        fields = '__all__'
-        # Protect internal fields from being overwritten by external requests
-        read_only_fields = ('citizen','status', 'total_amount')
+        fields = ['id', 'citizen', 'accommodation', 'tour_package', 
+                  'check_in_date', 'check_out_date', 'total_amount', 
+                  'status', 'is_paid', 'stripe_payment_intent', 'created_at','accommodation_name','tour_package_name']
+        read_only_fields = ['citizen', 'manager', 'total_amount', 'status', 'is_paid', 'stripe_payment_intent']
 
     def validate(self, data):
         check_in = data.get('check_in_date')

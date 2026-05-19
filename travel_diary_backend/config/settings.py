@@ -33,6 +33,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 
 # Application definition
 

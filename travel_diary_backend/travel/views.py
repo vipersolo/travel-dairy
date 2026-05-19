@@ -21,6 +21,10 @@ from rest_framework.views import APIView
 from django.db.models import Sum
 from users.models import BaseUser, Manager, Citizen
 from rest_framework.exceptions import PermissionDenied
+import stripe
+from django.conf import settings
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 class DestinationViewSet(viewsets.ModelViewSet):
@@ -258,35 +262,6 @@ class BookingViewSet(viewsets.ModelViewSet):
             return Response({"error": str(e)}, status=400)
         
 
-    @action(detail=True, methods=['post'])
-    def cancel(self, request, pk=None):
-        """
-        Endpoint: POST /api/v1/travel/bookings/{id}/cancel/
-        Safely cancels a booking if it is in a valid state.
-        """
-        # 1. Fetch the specific booking (get_object ensures it belongs to the logged-in user)
-        booking = self.get_object()
-
-        # 2. State Machine Gatekeeping
-        if booking.status == Booking.BookingStatus.CANCELLED:
-            return Response(
-                {"error": "This booking is already cancelled."}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-            
-        if booking.status == Booking.BookingStatus.COMPLETED:
-            return Response(
-                {"error": "Cannot cancel a trip that has already been completed."}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # 3. Perform the State Change
-        booking.status = Booking.BookingStatus.CANCELLED
-        booking.save()
-
-        # 4. Return the updated data to the frontend
-        serializer = self.get_serializer(booking)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'])
     def update_status(self, request, pk=None):
@@ -326,9 +301,65 @@ class BookingViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(booking)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['post'])
+    def create_payment_intent(self, request, pk=None):
+        """Generates a Stripe client_secret so the frontend can show the credit card form."""
+        booking = self.get_object()
+        
+        if booking.status != Booking.BookingStatus.CONFIRMED:
+            return Response({"error": "You can only pay for confirmed bookings."}, status=400)
+        if booking.is_paid:
+            return Response({"error": "This booking is already paid."}, status=400)
 
+        try:
+            # Stripe expects amounts in cents (e.g., $50.00 = 5000)
+            intent = stripe.PaymentIntent.create(
+                amount=int(booking.total_amount * 100),
+                currency='usd',
+                metadata={'booking_id': booking.id}
+            )
+            
+            # Save the intent ID so we can refund it later if needed
+            booking.stripe_payment_intent = intent.id
+            booking.save()
 
+            return Response({'client_secret': intent.client_secret})
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
 
+    @action(detail=True, methods=['post'])
+    def confirm_payment(self, request, pk=None):
+        """Called by the frontend after the credit card goes through."""
+        booking = self.get_object()
+        booking.is_paid = True
+        booking.save()
+        return Response({"message": "Payment successful!"})
+
+    @action(detail=True, methods=['post'])
+    def cancel_booking(self, request, pk=None):
+        """Allows a Citizen to cancel their booking and triggers a refund if paid."""
+        booking = self.get_object()
+        
+        if booking.status in [Booking.BookingStatus.COMPLETED, Booking.BookingStatus.CANCELLED]:
+            return Response({"error": "Booking is already completed or cancelled."}, status=400)
+
+        # 1. Handle the Financial Refund
+        if booking.is_paid and booking.stripe_payment_intent:
+            try:
+                stripe.Refund.create(payment_intent=booking.stripe_payment_intent)
+                booking.is_paid = False # Money returned
+            except Exception as e:
+                return Response({"error": f"Refund failed: {str(e)}"}, status=400)
+
+        # 2. Update the Database Status
+        booking.status = Booking.BookingStatus.CANCELLED
+        booking.save()
+        
+        return Response({"message": "Booking cancelled successfully. If you paid, a refund has been issued."})
+    
+
+    
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.select_related('citizen', 'destination', 'accommodation').all()
     serializer_class = ReviewSerializer
