@@ -33,13 +33,23 @@ class TourPackageSerializer(serializers.ModelSerializer):
 class BookingSerializer(serializers.ModelSerializer):
     accommodation_name = serializers.CharField(source='accommodation.name', read_only=True)
     tour_package_name = serializers.CharField(source='tour_package.title', read_only=True)
+    destination_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Booking
         fields = ['id', 'citizen', 'accommodation', 'tour_package', 
                   'check_in_date', 'check_out_date', 'total_amount', 
-                  'status', 'is_paid', 'stripe_payment_intent', 'created_at','accommodation_name','tour_package_name']
+                  'status', 'is_paid', 'stripe_payment_intent', 'created_at','accommodation_name','tour_package_name','destination_name']
         read_only_fields = ['citizen', 'manager', 'total_amount', 'status', 'is_paid', 'stripe_payment_intent']
+
+    def get_destination_name(self, obj):
+        if obj.accommodation:
+            return obj.accommodation.destination.name
+
+        if obj.tour_package:
+            return obj.tour_package.destination.name
+
+        return None
 
     def validate(self, data):
         check_in = data.get('check_in_date')

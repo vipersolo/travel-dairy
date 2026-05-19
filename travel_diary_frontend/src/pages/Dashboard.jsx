@@ -274,6 +274,10 @@ const Dashboard = () => {
                     <strong className="text-end">{selectedBooking.tour_package_name}</strong>
                   </ListGroup.Item>
                 )}
+                <ListGroup.Item className="d-flex justify-content-between">
+                  <span>Destination:</span>
+                  <strong>{selectedBooking.destination_name}</strong>
+                </ListGroup.Item>
               </ListGroup>
 
               <div className="d-flex justify-content-between align-items-center p-3 bg-light rounded border">
