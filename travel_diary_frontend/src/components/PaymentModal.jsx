@@ -5,7 +5,8 @@ import { Elements, CardElement, useStripe, useElements } from '@stripe/react-str
 import api from '../services/api';
 
 // Put your public test key here
-const stripePromise = loadStripe("pk_test_51TYlajCZYVfTY1VlZx8q0jusnQvyd7rl2K6KNp3x8IVaz9GkvnYjgc8wStCLNzIIAqzxQnVqHByXPfTTDbZFuVsU000WkpffSF");
+const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_test_51TYlajCZYVfTY1VlZx8q0jusnQvyd7rl2K6KNp3x8IVaz9GkvnYjgc8wStCLNzIIAqzxQnVqHByXPfTTDbZFuVsU000WkpffSF";
+const stripePromise = loadStripe(stripePublicKey);
 
 const CheckoutForm = ({ booking, onSuccess }) => {
     const stripe = useStripe();
