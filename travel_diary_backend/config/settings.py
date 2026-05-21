@@ -222,7 +222,7 @@ AUTH_USER_MODEL = 'users.BaseUser'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    'https://your-frontend.onrender.com',
+    'https://travel-dairy-frontend.onrender.com',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
