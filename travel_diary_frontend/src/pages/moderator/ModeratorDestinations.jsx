@@ -1,19 +1,39 @@
 import { useState, useEffect } from 'react';
-import { Container, Card, Table, Button, Modal, Form, Spinner, Alert } from 'react-bootstrap';
+import {
+    Container,
+    Card,
+    Table,
+    Button,
+    Modal,
+    Form,
+    Spinner,
+    Row,
+    Col,
+    Image,
+} from 'react-bootstrap';
+
 import api from '../../services/api';
 
 const ModeratorDestinations = () => {
     const [destinations, setDestinations] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+
+    // Modal State
     const [showModal, setShowModal] = useState(false);
-    
+
     // Form State
     const [name, setName] = useState('');
     const [country, setCountry] = useState('');
     const [description, setDescription] = useState('');
     const [bestTime, setBestTime] = useState('');
-    const [image, setImage] = useState(null); // Holds the file object
+    const [latitude, setLatitude] = useState('');
+    const [longitude, setLongitude] = useState('');
+    const [image, setImage] = useState(null);
+
+    // UI State
+    const [preview, setPreview] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         fetchDestinations();
@@ -25,128 +45,340 @@ const ModeratorDestinations = () => {
             setDestinations(response.data);
         } catch (err) {
             console.error(err);
+            setError('Failed to load destinations.');
         } finally {
             setIsLoading(false);
         }
     };
 
+    const resetForm = () => {
+        setName('');
+        setCountry('');
+        setDescription('');
+        setBestTime('');
+        setLatitude('');
+        setLongitude('');
+        setImage(null);
+        setPreview(null);
+        setError('');
+    };
+
+    const handleClose = () => {
+        setShowModal(false);
+        resetForm();
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+
+        if (file) {
+            setImage(file);
+            setPreview(URL.createObjectURL(file));
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsSubmitting(true);
 
-        // 1. Create a FormData object (Required for Image Uploads)
-        const formData = new FormData();
-        formData.append('name', name);
-        formData.append('country', country);
-        formData.append('description', description);
-        formData.append('best_time_to_visit', bestTime);
-        
-        // Only append the image if the user actually selected one
-        if (image) {
-            formData.append('image', image);
-        }
+        setIsSubmitting(true);
+        setError('');
 
         try {
-            // 2. We must override the default JSON headers to multipart/form-data
+            const formData = new FormData();
+
+            formData.append('name', name);
+            formData.append('country', country);
+            formData.append('description', description);
+            formData.append('best_time_to_visit', bestTime);
+            formData.append('latitude', latitude);
+            formData.append('longitude', longitude);
+
+            if (image) {
+                formData.append('image', image);
+            }
+
             await api.post('travel/destinations/', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
             });
-            
-            setShowModal(false);
-            fetchDestinations(); // Refresh the list
-            
-            // Reset form
-            setName(''); setCountry(''); setDescription(''); setBestTime(''); setImage(null);
+
+            fetchDestinations();
+            handleClose();
         } catch (err) {
-            alert("Failed to create destination. Ensure the name is unique.");
+            console.error(err);
+
+            if (err.response?.data) {
+                console.log(err.response.data);
+            }
+
+            setError(
+                'Failed to create destination. Please check all fields and ensure the destination name is unique.'
+            );
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    if (isLoading) return <Spinner animation="border" className="d-block mx-auto mt-5" />;
+    if (isLoading) {
+        return (
+            <div className="text-center mt-5">
+                <Spinner animation="border" />
+            </div>
+        );
+    }
 
     return (
         <Container fluid className="px-0">
+            {/* Header */}
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2>Master Destinations List</h2>
-                <Button variant="primary" onClick={() => setShowModal(true)}>+ Add Destination</Button>
+                <div>
+                    <h2 className="fw-bold mb-1">Master Destinations</h2>
+                    <p className="text-muted mb-0">
+                        Manage all available travel destinations
+                    </p>
+                </div>
+
+                <Button
+                    variant="primary"
+                    onClick={() => setShowModal(true)}
+                >
+                    + Add Destination
+                </Button>
             </div>
 
-            <Card className="shadow-sm border-0">
-                <Table responsive hover className="mb-0 align-middle">
-                    <thead className="bg-light">
-                        <tr>
-                            <th>Image</th>
-                            <th>Destination</th>
-                            <th>Country</th>
-                            <th>Best Time</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {destinations.map((dest) => (
-                            <tr key={dest.id}>
-                                <td>
-                                    {dest.image ? (
-                                        <img src={dest.image} alt={dest.name} style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
-                                    ) : (
-                                        <span className="text-muted small">No Image</span>
-                                    )}
-                                </td>
-                                <td><strong>{dest.name}</strong></td>
-                                <td>{dest.country}</td>
-                                <td>{dest.best_time_to_visit}</td>
+            {/* Table */}
+            <Card className="border-0 shadow-sm">
+                <Card.Body className="p-0">
+                    <Table responsive hover className="mb-0 align-middle">
+                        <thead className="table-light">
+                            <tr>
+                                <th>Image</th>
+                                <th>Destination</th>
+                                <th>Country</th>
+                                <th>Best Time</th>
+                                <th>Latitude</th>
+                                <th>Longitude</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </Table>
+                        </thead>
+
+                        <tbody>
+                            {destinations.length > 0 ? (
+                                destinations.map((dest) => (
+                                    <tr key={dest.id}>
+                                        <td>
+                                            {dest.image ? (
+                                                <Image
+                                                    src={dest.image}
+                                                    alt={dest.name}
+                                                    rounded
+                                                    style={{
+                                                        width: '80px',
+                                                        height: '55px',
+                                                        objectFit: 'cover',
+                                                    }}
+                                                />
+                                            ) : (
+                                                <span className="text-muted small">
+                                                    No Image
+                                                </span>
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            <strong>{dest.name}</strong>
+                                        </td>
+
+                                        <td>{dest.country}</td>
+
+                                        <td>{dest.best_time_to_visit}</td>
+
+                                        <td>{dest.latitude}</td>
+
+                                        <td>{dest.longitude}</td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td
+                                        colSpan="6"
+                                        className="text-center py-4 text-muted"
+                                    >
+                                        No destinations found.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </Table>
+                </Card.Body>
             </Card>
 
-            {/* Create Destination Modal */}
-            <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+            {/* Modal */}
+            <Modal
+                show={showModal}
+                onHide={handleClose}
+                centered
+                size="lg"
+            >
                 <Modal.Header closeButton>
                     <Modal.Title>Create New Destination</Modal.Title>
                 </Modal.Header>
+
                 <Modal.Body>
+                    {error && (
+                        <div className="alert alert-danger">
+                            {error}
+                        </div>
+                    )}
+
                     <Form onSubmit={handleSubmit}>
-                        <div className="row mb-3">
-                            <div className="col-md-6">
+                        {/* Name & Country */}
+                        <Row className="mb-3">
+                            <Col md={6}>
                                 <Form.Group>
-                                    <Form.Label>City / Region Name</Form.Label>
-                                    <Form.Control type="text" required value={name} onChange={e => setName(e.target.value)} />
+                                    <Form.Label>
+                                        Destination Name
+                                    </Form.Label>
+
+                                    <Form.Control
+                                        type="text"
+                                        placeholder="Enter destination name"
+                                        value={name}
+                                        onChange={(e) =>
+                                            setName(e.target.value)
+                                        }
+                                        required
+                                    />
                                 </Form.Group>
-                            </div>
-                            <div className="col-md-6">
+                            </Col>
+
+                            <Col md={6}>
                                 <Form.Group>
                                     <Form.Label>Country</Form.Label>
-                                    <Form.Control type="text" required value={country} onChange={e => setCountry(e.target.value)} />
-                                </Form.Group>
-                            </div>
-                        </div>
 
+                                    <Form.Control
+                                        type="text"
+                                        placeholder="Enter country"
+                                        value={country}
+                                        onChange={(e) =>
+                                            setCountry(e.target.value)
+                                        }
+                                        required
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+
+                        {/* Description */}
                         <Form.Group className="mb-3">
                             <Form.Label>Description</Form.Label>
-                            <Form.Control as="textarea" rows={3} required value={description} onChange={e => setDescription(e.target.value)} />
+
+                            <Form.Control
+                                as="textarea"
+                                rows={4}
+                                placeholder="Enter destination description"
+                                value={description}
+                                onChange={(e) =>
+                                    setDescription(e.target.value)
+                                }
+                                required
+                            />
                         </Form.Group>
 
-                        <div className="row mb-4">
-                            <div className="col-md-6">
+                        {/* Best Time */}
+                        <Row className="mb-3">
+                            <Col md={12}>
                                 <Form.Group>
-                                    <Form.Label>Best Time to Visit</Form.Label>
-                                    <Form.Control type="text" placeholder="e.g., May to September" required value={bestTime} onChange={e => setBestTime(e.target.value)} />
-                                </Form.Group>
-                            </div>
-                            <div className="col-md-6">
-                                <Form.Group>
-                                    <Form.Label>Hero Image</Form.Label>
-                                    {/* Notice type="file" and the onChange event using e.target.files[0] */}
-                                    <Form.Control type="file" accept="image/*" onChange={e => setImage(e.target.files[0])} />
-                                </Form.Group>
-                            </div>
-                        </div>
+                                    <Form.Label>
+                                        Best Time to Visit
+                                    </Form.Label>
 
-                        <Button type="submit" variant="primary" className="w-100" disabled={isSubmitting}>
-                            {isSubmitting ? 'Uploading...' : 'Save Destination'}
+                                    <Form.Control
+                                        type="text"
+                                        placeholder="Example: October to February"
+                                        value={bestTime}
+                                        onChange={(e) =>
+                                            setBestTime(e.target.value)
+                                        }
+                                        required
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+
+                        {/* Latitude & Longitude */}
+                        <Row className="mb-3">
+                            <Col md={6}>
+                                <Form.Group>
+                                    <Form.Label>Latitude</Form.Label>
+
+                                    <Form.Control
+                                        type="number"
+                                        step="any"
+                                        placeholder="Example: 11.2588"
+                                        value={latitude}
+                                        onChange={(e) =>
+                                            setLatitude(e.target.value)
+                                        }
+                                        required
+                                    />
+                                </Form.Group>
+                            </Col>
+
+                            <Col md={6}>
+                                <Form.Group>
+                                    <Form.Label>Longitude</Form.Label>
+
+                                    <Form.Control
+                                        type="number"
+                                        step="any"
+                                        placeholder="Example: 75.7804"
+                                        value={longitude}
+                                        onChange={(e) =>
+                                            setLongitude(e.target.value)
+                                        }
+                                        required
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+
+                        {/* Image Upload */}
+                        <Form.Group className="mb-4">
+                            <Form.Label>Destination Image</Form.Label>
+
+                            <Form.Control
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                            />
+
+                            {preview && (
+                                <div className="mt-3 text-center">
+                                    <Image
+                                        src={preview}
+                                        alt="Preview"
+                                        rounded
+                                        fluid
+                                        style={{
+                                            maxHeight: '220px',
+                                            objectFit: 'cover',
+                                        }}
+                                    />
+                                </div>
+                            )}
+                        </Form.Group>
+
+                        {/* Submit */}
+                        <Button
+                            type="submit"
+                            variant="primary"
+                            className="w-100"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting
+                                ? 'Saving Destination...'
+                                : 'Save Destination'}
                         </Button>
                     </Form>
                 </Modal.Body>
