@@ -1,29 +1,31 @@
 # Use official Python runtime as a parent image
 FROM python:3.11-slim
 
-# Set environment variables to prevent Python from writing .pyc files 
-# and ensure console output is not buffered
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+# Prevent .pyc files and enable immediate console logs
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Set the working directory in the container
+# TEMP database for build stage only
+ENV DATABASE_URL=sqlite:///db.sqlite3
+
+# Set working directory
 WORKDIR /app
 
-# Install system dependencies (required for some Python packages)
+# Install system dependencies
 RUN apt-get update && apt-get install -y gcc libpq-dev
 
 # Install Python dependencies
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code
+# Copy project files
 COPY . /app/
 
-# Collect static files for Django Admin UI
+# Collect static files
 RUN python manage.py collectstatic --noinput
 
-# Expose the port Render expects
+# Expose port
 EXPOSE 8000
 
-# Start Gunicorn server
+# Start Gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "travel_diary_backend.wsgi:application"]
