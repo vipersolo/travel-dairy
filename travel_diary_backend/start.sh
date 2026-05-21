@@ -7,12 +7,16 @@ echo "Applying database migrations..."
 python manage.py migrate --noinput
 
 echo "Checking/Creating Master Admin account..."
-# We use a tiny inline Python script to safely create the user 
+# We use a tiny inline Python script to safely create the user
 # without crashing if the user already exists.
 python -c "
 import os
 import django
+
+# Tell Django where the settings file is located before setup
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'travel_diary_backend.settings')
 django.setup()
+
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
