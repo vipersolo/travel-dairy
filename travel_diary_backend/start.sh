@@ -13,8 +13,8 @@ python -c "
 import os
 import django
 
-# Tell Django where the settings file is located before setup
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'travel_diary_backend.settings')
+# Tell Django to look in the 'config' folder for settings
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
 from django.contrib.auth import get_user_model
@@ -32,4 +32,5 @@ else:
 "
 
 echo "Starting Gunicorn server..."
-exec gunicorn --bind 0.0.0.0:8000 travel_diary_backend.wsgi:application
+# Point Gunicorn to the 'config' folder as well
+exec gunicorn --bind 0.0.0.0:8000 config.wsgi:application
