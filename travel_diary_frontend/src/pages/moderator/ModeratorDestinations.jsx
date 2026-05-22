@@ -21,6 +21,10 @@ const ModeratorDestinations = () => {
     // Modal State
     const [showModal, setShowModal] = useState(false);
 
+    // Edit State
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [selectedDestination, setSelectedDestination] = useState(null);
+
     // Form State
     const [name, setName] = useState('');
     const [country, setCountry] = useState('');
@@ -61,6 +65,9 @@ const ModeratorDestinations = () => {
         setImage(null);
         setPreview(null);
         setError('');
+
+        setIsEditMode(false);
+        setSelectedDestination(null);
     };
 
     const handleClose = () => {
@@ -74,6 +81,43 @@ const ModeratorDestinations = () => {
         if (file) {
             setImage(file);
             setPreview(URL.createObjectURL(file));
+        }
+    };
+
+    const handleEdit = (destination) => {
+        setIsEditMode(true);
+        setSelectedDestination(destination);
+
+        setName(destination.name || '');
+        setCountry(destination.country || '');
+        setDescription(destination.description || '');
+        setBestTime(destination.best_time_to_visit || '');
+        setLatitude(destination.latitude || '');
+        setLongitude(destination.longitude || '');
+
+        setPreview(destination.image || null);
+        setImage(null);
+
+        setShowModal(true);
+    };
+
+    const handleDelete = async (id) => {
+        const confirmDelete = window.confirm(
+            'Are you sure you want to delete this destination?'
+        );
+
+        if (!confirmDelete) return;
+
+        try {
+            await api.delete(`travel/destinations/${id}/`);
+
+            setDestinations((prev) =>
+                prev.filter((dest) => dest.id !== id)
+            );
+
+        } catch (err) {
+            console.error(err);
+            alert('Failed to delete destination.');
         }
     };
 
@@ -97,14 +141,31 @@ const ModeratorDestinations = () => {
                 formData.append('image', image);
             }
 
-            await api.post('travel/destinations/', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+            if (isEditMode && selectedDestination) {
+                await api.put(
+                    `travel/destinations/${selectedDestination.id}/`,
+                    formData,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    }
+                );
+            } else {
+                await api.post(
+                    'travel/destinations/',
+                    formData,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    }
+                );
+            }
 
             fetchDestinations();
             handleClose();
+
         } catch (err) {
             console.error(err);
 
@@ -113,8 +174,11 @@ const ModeratorDestinations = () => {
             }
 
             setError(
-                'Failed to create destination. Please check all fields and ensure the destination name is unique.'
+                `Failed to ${
+                    isEditMode ? 'update' : 'create'
+                } destination.`
             );
+
         } finally {
             setIsSubmitting(false);
         }
@@ -133,7 +197,10 @@ const ModeratorDestinations = () => {
             {/* Header */}
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h2 className="fw-bold mb-1">Master Destinations</h2>
+                    <h2 className="fw-bold mb-1">
+                        Master Destinations
+                    </h2>
+
                     <p className="text-muted mb-0">
                         Manage all available travel destinations
                     </p>
@@ -141,7 +208,10 @@ const ModeratorDestinations = () => {
 
                 <Button
                     variant="primary"
-                    onClick={() => setShowModal(true)}
+                    onClick={() => {
+                        resetForm();
+                        setShowModal(true);
+                    }}
                 >
                     + Add Destination
                 </Button>
@@ -159,6 +229,7 @@ const ModeratorDestinations = () => {
                                 <th>Best Time</th>
                                 <th>Latitude</th>
                                 <th>Longitude</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
 
@@ -191,17 +262,43 @@ const ModeratorDestinations = () => {
 
                                         <td>{dest.country}</td>
 
-                                        <td>{dest.best_time_to_visit}</td>
+                                        <td>
+                                            {dest.best_time_to_visit}
+                                        </td>
 
                                         <td>{dest.latitude}</td>
 
                                         <td>{dest.longitude}</td>
+
+                                        <td>
+                                            <div className="d-flex gap-2">
+                                                <Button
+                                                    size="sm"
+                                                    variant="warning"
+                                                    onClick={() =>
+                                                        handleEdit(dest)
+                                                    }
+                                                >
+                                                    Edit
+                                                </Button>
+
+                                                <Button
+                                                    size="sm"
+                                                    variant="danger"
+                                                    onClick={() =>
+                                                        handleDelete(dest.id)
+                                                    }
+                                                >
+                                                    Delete
+                                                </Button>
+                                            </div>
+                                        </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
                                     <td
-                                        colSpan="6"
+                                        colSpan="7"
                                         className="text-center py-4 text-muted"
                                     >
                                         No destinations found.
@@ -221,7 +318,11 @@ const ModeratorDestinations = () => {
                 size="lg"
             >
                 <Modal.Header closeButton>
-                    <Modal.Title>Create New Destination</Modal.Title>
+                    <Modal.Title>
+                        {isEditMode
+                            ? 'Edit Destination'
+                            : 'Create New Destination'}
+                    </Modal.Title>
                 </Modal.Header>
 
                 <Modal.Body>
@@ -345,7 +446,9 @@ const ModeratorDestinations = () => {
 
                         {/* Image Upload */}
                         <Form.Group className="mb-4">
-                            <Form.Label>Destination Image</Form.Label>
+                            <Form.Label>
+                                Destination Image
+                            </Form.Label>
 
                             <Form.Control
                                 type="file"
@@ -377,7 +480,11 @@ const ModeratorDestinations = () => {
                             disabled={isSubmitting}
                         >
                             {isSubmitting
-                                ? 'Saving Destination...'
+                                ? isEditMode
+                                    ? 'Updating Destination...'
+                                    : 'Saving Destination...'
+                                : isEditMode
+                                ? 'Update Destination'
                                 : 'Save Destination'}
                         </Button>
                     </Form>
