@@ -88,7 +88,7 @@ class DestinationViewSet(viewsets.ModelViewSet):
         serializer = PublicReviewSerializer(reviews, many=True)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], permission_classes=[IsCitizen])
     def add_review(self, request, pk=None):
         """
         Endpoint: POST /api/v1/travel/destinations/{id}/add_review/
@@ -96,6 +96,10 @@ class DestinationViewSet(viewsets.ModelViewSet):
         """
         destination = self.get_object()
         user = request.user
+
+        print("USER:", request.user)
+        print("AUTH:", request.auth)
+        print("AUTHENTICATED:", request.user.is_authenticated)
 
         # 1. Gatekeeping: Only Citizens can review
         if not user.is_authenticated or getattr(user, 'role', '') != 'CITIZEN':
@@ -367,6 +371,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.select_related('citizen', 'destination', 'accommodation').all()
     serializer_class = ReviewSerializer
     permission_classes = [IsCitizen]
+    
+
 
 
 class ModeratorReviewViewSet(viewsets.ReadOnlyModelViewSet):
