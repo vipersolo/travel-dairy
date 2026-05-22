@@ -73,8 +73,13 @@ const DestinationDetails = () => {
 
     return (
         <Container>
-            <Button variant="link" onClick={() => navigate(-1)} className="mb-3 px-0">
-                &larr; Back
+            <Button
+                variant="primary"
+                onClick={() => navigate(-1)}
+                className="mb-3 d-inline-flex align-items-center gap-2 rounded-pill px-3 py-2"
+            >
+                <span>&larr;</span>
+                <span>Back</span>
             </Button>
 
             {/* --- Main Destination Card (Unchanged) --- */}
@@ -194,7 +199,13 @@ const DestinationDetails = () => {
                                         <Card.Body className="py-2">
                                             <Card.Title className="h6 mb-0">{rec.name}</Card.Title>
                                             <Card.Text className="text-muted small">{rec.country}</Card.Text>
-                                            <Button as={Link} to={`/destinations/${rec.id}`} variant="link" size="sm" className="px-0">
+                                            <Button
+                                                as={Link}
+                                                to={`/destinations/${rec.id}`}
+                                                variant="primary"
+                                                size="sm"
+                                                className="rounded-pill px-3"
+                                            >
                                                 Explore &rarr;
                                             </Button>
                                         </Card.Body>
