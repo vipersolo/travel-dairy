@@ -82,7 +82,7 @@ const DestinationDetails = () => {
                 <div style={{ height: '400px', overflow: 'hidden', borderRadius: '4px 4px 0 0' }}>
                     <Card.Img 
                         variant="top" 
-                        src={`https://source.unsplash.com/1200x400/?${destination.name},landscape`} 
+                        src={destination.image} 
                         style={{ objectFit: 'cover', width: '100%', height: '100%' }}
                     />
                 </div>
@@ -190,7 +190,7 @@ const DestinationDetails = () => {
                             <div className="d-flex flex-column gap-3">
                                 {recommendations.map((rec) => (
                                     <Card key={rec.id} className="shadow-sm transition-hover border-0">
-                                        <Card.Img variant="top" src={`https://source.unsplash.com/400x200/?${rec.name},city`} style={{ height: '120px', objectFit: 'cover' }} />
+                                        <Card.Img variant="top" src={rec.image} style={{ height: '120px', objectFit: 'cover' }} />
                                         <Card.Body className="py-2">
                                             <Card.Title className="h6 mb-0">{rec.name}</Card.Title>
                                             <Card.Text className="text-muted small">{rec.country}</Card.Text>
