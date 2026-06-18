@@ -35,8 +35,8 @@ A full-stack travel planning platform built using Django REST Framework and Reac
 
 ## Live Demo
 
-Frontend: https://asset-management-frontend-react.onrender.com
-Backend API: https://asset-mangement-system-react-django.onrender.com
+Frontend: https://travel-dairy-frontend.onrender.com
+Backend API: https://travel-dairy-backend-yioe.onrender.com
 
 ## Screenshots
 
