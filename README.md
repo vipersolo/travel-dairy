@@ -15,6 +15,7 @@ A full-stack travel planning platform built using Django REST Framework and Reac
 - Cloudinary
 - Dockerized production deployment
 - Automated refunds
+- Nginx
 
 ## Tech Stack
 
