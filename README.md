@@ -59,18 +59,6 @@ cd travel_diary_frontend
 
 npm install
 npm run dev
-Environment Variables
-
-Create a .env file in the backend:
-
-SECRET_KEY=your_secret_key
-DEBUG=True
-DATABASE_URL=your_database_url
-Access
-
-Frontend: http://localhost:5173
-
-Backend API: http://127.0.0.1:8000
 
 ## Future Improvements
 
