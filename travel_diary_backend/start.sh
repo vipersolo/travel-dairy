@@ -6,6 +6,9 @@ set -e
 echo "Applying database migrations..."
 python manage.py migrate --noinput
 
+echo "Seeding destinations..."
+python manage.py seed_destinations
+
 echo "Checking/Creating Master Admin account..."
 # We use a tiny inline Python script to safely create the user
 # without crashing if the user already exists.
