@@ -1,7 +1,14 @@
+from django.core.management.base import BaseCommand
 from travel.models import Destination
 
-destinations = [
-    {
+
+class Command(BaseCommand):
+    help = "Populate destination data"
+
+    def handle(self, *args, **kwargs):
+
+        destinations = [
+            {
     "name": "Ooty",
     "country": "India",
     "description": "Hill station in Tamil Nadu famous for tea gardens, botanical gardens, toy train, lakes, cool climate, trekking, and mountain scenery.",
@@ -161,12 +168,15 @@ destinations = [
     "latitude": 40.7128,
     "longitude": -74.0060
 },
-]
+        ]
 
-for data in destinations:
-    Destination.objects.get_or_create(
-        name=data["name"],
-        defaults=data
-    )
+        for data in destinations:
+            Destination.objects.update_or_create(
+                name=data["name"],
+                defaults=data
+            )
 
-print("Destinations populated successfully!")
+        self.stdout.write(
+            self.style.SUCCESS("Destinations populated successfully!")
+        )
+
