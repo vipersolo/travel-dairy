@@ -47,7 +47,7 @@ const PlanTrip = () => {
 
         // Filter inventory for current destination
         setAccommodations(
-          accRes.data.filter((a) => a.destination.toString() === id),
+          accRes.data.filter((a) => a.destination.toString() === id && a.is_active === true),
         );
 
         setTourPackages(
