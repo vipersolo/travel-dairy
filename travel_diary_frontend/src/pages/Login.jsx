@@ -9,7 +9,7 @@ import {
 } from 'react-bootstrap';
 import { EnvelopeFill, LockFill, BoxArrowInRight } from 'react-bootstrap-icons';
 import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { loginSuccess } from '../store/authSlice';
 
@@ -209,9 +209,20 @@ const Login = () => {
 
                     {/* Footer */}
                     <div className="text-center mt-4">
-                        <small className="text-muted">
+                        <small className="text-muted d-block mb-2">
                             Explore destinations, plan trips and create memories.
                         </small>
+
+                        <span className="text-muted">
+                            Don't have an account?{" "}
+                        </span>
+
+                        <Link
+                            to="/register"
+                            className="fw-semibold text-decoration-none"
+                        >
+                            Register
+                        </Link>
                     </div>
                 </Card.Body>
             </Card>

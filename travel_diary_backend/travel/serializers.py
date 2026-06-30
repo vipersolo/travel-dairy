@@ -2,6 +2,8 @@ from rest_framework import serializers
 from datetime import timedelta
 
 from .models import Destination, Accommodation, TourPackage, Booking, Review
+from rest_framework import serializers
+from .models import Booking, Citizen
 
 class DestinationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -29,15 +31,21 @@ class TourPackageSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('manager',)
 
+# 1. Create a simple serializer for the Citizen model
+class CitizenBasicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Citizen
+        fields = ['first_name', 'last_name', 'phone_number']
 
 class BookingSerializer(serializers.ModelSerializer):
     accommodation_name = serializers.CharField(source='accommodation.name', read_only=True)
     tour_package_name = serializers.CharField(source='tour_package.title', read_only=True)
     destination_name = serializers.SerializerMethodField()
+    citizen_details = CitizenBasicSerializer(source='citizen', read_only=True)
 
     class Meta:
         model = Booking
-        fields = ['id', 'citizen', 'accommodation', 'tour_package', 
+        fields = ['id', 'citizen','citizen_details', 'accommodation', 'tour_package', 
                   'check_in_date', 'check_out_date', 'total_amount', 
                   'status', 'is_paid', 'stripe_payment_intent', 'created_at','accommodation_name','tour_package_name','destination_name']
         read_only_fields = ['citizen', 'manager', 'total_amount', 'status', 'is_paid', 'stripe_payment_intent']

@@ -105,44 +105,69 @@ const ManagerAccommodations = () => {
         }
     };
 
-    if (isLoading) return <Spinner animation="border" className="d-block mx-auto mt-5" />;
+    // Improved Full-Screen Loading State
+    if (isLoading) return (
+        <div className="d-flex flex-column justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
+            <Spinner animation="border" variant="primary" className="mb-3" />
+            <h5 className="text-muted">Loading your inventory...</h5>
+        </div>
+    );
 
     return (
-        <div>
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2>My Hotel Inventory</h2>
-                <Button variant="primary" onClick={() => handleShowModal()}>+ Add New Hotel</Button>
+        <div className="py-3">
+            {/* Header Section */}
+            <div className="d-flex justify-content-between align-items-end mb-4">
+                <div>
+                    <h2 className="fw-bold mb-1">My Hotel Inventory</h2>
+                    <p className="text-muted mb-0">Manage your property listings, pricing, and details.</p>
+                </div>
+                <Button variant="primary" className="px-4 py-2 rounded-pill shadow-sm fw-medium" onClick={() => handleShowModal()}>
+                    + Add New Hotel
+                </Button>
             </div>
 
-            {error && <Alert variant="danger">{error}</Alert>}
+            {error && <Alert variant="danger" className="shadow-sm rounded-3">{error}</Alert>}
 
-            <Card className="shadow-sm border-0">
-                <Table responsive hover className="mb-0">
-                    <thead className="bg-light">
+            {/* Main Table Card */}
+            <Card className="shadow-sm border-0 rounded-4 overflow-hidden">
+                <Table responsive hover className="mb-0 align-middle">
+                    <thead className="bg-light text-secondary border-bottom">
                         <tr>
-                            <th>Property Name</th>
-                            <th>Destination</th>
-                            <th>Price / Night</th>
-                            <th>Rating</th>
-                            <th>Status</th>
-                            <th className="text-end">Actions</th>
+                            <th className="py-3 px-4 fw-semibold border-0">Property Name</th>
+                            <th className="py-3 fw-semibold border-0">Destination</th>
+                            <th className="py-3 fw-semibold border-0">Price / Night</th>
+                            <th className="py-3 fw-semibold border-0">Rating</th>
+                            <th className="py-3 fw-semibold border-0">Status</th>
+                            <th className="py-3 px-4 text-end fw-semibold border-0">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {accommodations.map(acc => (
-                            <tr key={acc.id} className="align-middle">
-                                <td><strong>{acc.name}</strong></td>
-                                <td>{acc.destination_name}</td>
-                                <td>${parseFloat(acc.price_per_night).toFixed(2)}</td>
-                                <td>{acc.star_rating} ⭐</td>
-                                <td>
-                                    {acc.is_active ? <Badge bg="success">Active</Badge> : <Badge bg="secondary">Inactive</Badge>}
+                            <tr key={acc.id}>
+                                <td className="px-4">
+                                    <span className="fw-bold text-dark fs-6">{acc.name}</span>
                                 </td>
-                                <td className="text-end">
-                                    <Button variant="outline-primary" size="sm" className="me-2" onClick={() => handleShowModal(acc)}>
+                                <td>
+                                    <span className="text-muted">📍 {acc.destination_name}</span>
+                                </td>
+                                <td>
+                                    <span className="fw-semibold text-success">${parseFloat(acc.price_per_night).toFixed(2)}</span>
+                                </td>
+                                <td>
+                                    <span className="text-warning fs-5">{'★'.repeat(acc.star_rating)}</span>
+                                    <span className="text-light fs-5">{'★'.repeat(5 - acc.star_rating)}</span>
+                                </td>
+                                <td>
+                                    {acc.is_active ? 
+                                        <Badge bg="success" className="px-3 py-2 rounded-pill fw-medium">Active</Badge> : 
+                                        <Badge bg="secondary" className="px-3 py-2 rounded-pill fw-medium">Inactive</Badge>
+                                    }
+                                </td>
+                                <td className="px-4 text-end">
+                                    <Button variant="outline-primary" size="sm" className="me-2 rounded-3 px-3" onClick={() => handleShowModal(acc)}>
                                         Edit
                                     </Button>
-                                    <Button variant="outline-danger" size="sm" onClick={() => handleDelete(acc.id)}>
+                                    <Button variant="outline-danger" size="sm" className="rounded-3 px-3" onClick={() => handleDelete(acc.id)}>
                                         Delete
                                     </Button>
                                 </td>
@@ -150,8 +175,15 @@ const ManagerAccommodations = () => {
                         ))}
                         {accommodations.length === 0 && (
                             <tr>
-                                <td colSpan="6" className="text-center py-4 text-muted">
-                                    No properties found. Add your first hotel to start receiving bookings.
+                                <td colSpan="6" className="text-center py-5">
+                                    <div className="text-muted">
+                                        <div className="fs-1 mb-3">🏨</div>
+                                        <h5 className="fw-semibold text-dark">No properties found</h5>
+                                        <p>Add your first hotel to start receiving bookings.</p>
+                                        <Button variant="outline-primary" className="mt-2 rounded-pill px-4" onClick={() => handleShowModal()}>
+                                            Add Property Now
+                                        </Button>
+                                    </div>
                                 </td>
                             </tr>
                         )}
@@ -160,23 +192,39 @@ const ManagerAccommodations = () => {
             </Card>
 
             {/* Unified Create/Edit Modal */}
-            <Modal show={showModal} onHide={handleCloseModal} size="lg">
-                <Modal.Header closeButton>
-                    <Modal.Title>{editingId ? 'Edit Property' : 'Add New Property'}</Modal.Title>
+            <Modal show={showModal} onHide={handleCloseModal} size="lg" centered backdrop="static">
+                <Modal.Header closeButton className="bg-light border-bottom-0 pb-3">
+                    <Modal.Title className="fw-bold">
+                        {editingId ? 'Edit Property Details' : 'Add New Property'}
+                    </Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
+                <Modal.Body className="px-4 pt-2 pb-4">
                     <Form onSubmit={handleSubmit}>
                         <Row className="mb-3">
                             <Col md={6}>
                                 <Form.Group>
-                                    <Form.Label>Property Name</Form.Label>
-                                    <Form.Control type="text" name="name" value={formData.name} onChange={handleChange} required />
+                                    <Form.Label className="fw-medium text-secondary">Property Name</Form.Label>
+                                    <Form.Control 
+                                        type="text" 
+                                        name="name" 
+                                        placeholder="e.g. Oceanview Resort" 
+                                        value={formData.name} 
+                                        onChange={handleChange} 
+                                        required 
+                                        className="shadow-none rounded-3 py-2"
+                                    />
                                 </Form.Group>
                             </Col>
                             <Col md={6}>
                                 <Form.Group>
-                                    <Form.Label>Destination Location</Form.Label>
-                                    <Form.Select name="destination" value={formData.destination} onChange={handleChange} required>
+                                    <Form.Label className="fw-medium text-secondary">Destination Location</Form.Label>
+                                    <Form.Select 
+                                        name="destination" 
+                                        value={formData.destination} 
+                                        onChange={handleChange} 
+                                        required 
+                                        className="shadow-none rounded-3 py-2"
+                                    >
                                         <option value="">Select a City...</option>
                                         {destinations.map(dest => (
                                             <option key={dest.id} value={dest.id}>{dest.name}, {dest.country}</option>
@@ -186,35 +234,70 @@ const ManagerAccommodations = () => {
                             </Col>
                         </Row>
 
-                        <Form.Group className="mb-3">
-                            <Form.Label>Full Address</Form.Label>
-                            <Form.Control as="textarea" rows={2} name="address" value={formData.address} onChange={handleChange} required />
+                        <Form.Group className="mb-4">
+                            <Form.Label className="fw-medium text-secondary">Full Address</Form.Label>
+                            <Form.Control 
+                                as="textarea" 
+                                rows={2} 
+                                name="address" 
+                                placeholder="Street address, neighborhood, zip code..." 
+                                value={formData.address} 
+                                onChange={handleChange} 
+                                required 
+                                className="shadow-none rounded-3"
+                            />
                         </Form.Group>
 
-                        <Row className="mb-4">
+                        <Row className="mb-4 align-items-center bg-light p-3 rounded-4 mx-0">
                             <Col md={4}>
                                 <Form.Group>
-                                    <Form.Label>Price per Night ($)</Form.Label>
-                                    <Form.Control type="number" step="0.01" name="price_per_night" value={formData.price_per_night} onChange={handleChange} required />
+                                    <Form.Label className="fw-medium text-secondary">Price per Night ($)</Form.Label>
+                                    <Form.Control 
+                                        type="number" 
+                                        step="0.01" 
+                                        name="price_per_night" 
+                                        placeholder="0.00" 
+                                        value={formData.price_per_night} 
+                                        onChange={handleChange} 
+                                        required 
+                                        className="shadow-none rounded-3"
+                                    />
                                 </Form.Group>
                             </Col>
                             <Col md={4}>
                                 <Form.Group>
-                                    <Form.Label>Star Rating</Form.Label>
-                                    <Form.Select name="star_rating" value={formData.star_rating} onChange={handleChange}>
+                                    <Form.Label className="fw-medium text-secondary">Star Rating</Form.Label>
+                                    <Form.Select 
+                                        name="star_rating" 
+                                        value={formData.star_rating} 
+                                        onChange={handleChange}
+                                        className="shadow-none rounded-3"
+                                    >
                                         {[1, 2, 3, 4, 5].map(num => <option key={num} value={num}>{num} Stars</option>)}
                                     </Form.Select>
                                 </Form.Group>
                             </Col>
-                            <Col md={4} className="d-flex align-items-end pb-2">
-                                <Form.Check type="checkbox" id="is_active" name="is_active" label="Listing is Active" checked={formData.is_active} onChange={handleChange} />
+                            <Col md={4} className="d-flex justify-content-md-end mt-3 mt-md-0 pt-md-4">
+                                <Form.Check 
+                                    type="switch" 
+                                    id="is_active" 
+                                    name="is_active" 
+                                    label="Listing is Active" 
+                                    checked={formData.is_active} 
+                                    onChange={handleChange} 
+                                    className="fw-medium text-dark"
+                                />
                             </Col>
                         </Row>
 
-                        <div className="d-flex justify-content-end gap-2">
-                            <Button variant="secondary" onClick={handleCloseModal}>Cancel</Button>
-                            <Button variant="primary" type="submit" disabled={isSubmitting}>
-                                {isSubmitting ? <Spinner size="sm" animation="border" /> : 'Save Property'}
+                        <div className="d-flex justify-content-end gap-3 mt-4 border-top pt-3">
+                            <Button variant="light" className="px-4 rounded-pill fw-medium" onClick={handleCloseModal}>
+                                Cancel
+                            </Button>
+                            <Button variant="primary" type="submit" disabled={isSubmitting} className="px-4 rounded-pill fw-medium shadow-sm">
+                                {isSubmitting ? (
+                                    <><Spinner size="sm" animation="border" className="me-2" /> Saving...</>
+                                ) : 'Save Property'}
                             </Button>
                         </div>
                     </Form>

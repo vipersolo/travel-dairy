@@ -46,11 +46,11 @@ const Dashboard = () => {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case "CONFIRMED": return <Badge bg="success">Confirmed</Badge>;
-      case "PENDING": return <Badge bg="warning" text="dark">Pending</Badge>;
-      case "CANCELLED": return <Badge bg="danger">Cancelled</Badge>;
-      case "COMPLETED": return <Badge bg="info">Completed</Badge>;
-      default: return <Badge bg="secondary">{status}</Badge>;
+      case "CONFIRMED": return <Badge pill bg="success" className="px-3 py-2 shadow-sm">Confirmed</Badge>;
+      case "PENDING": return <Badge pill bg="warning" text="dark" className="px-3 py-2 shadow-sm">Pending</Badge>;
+      case "CANCELLED": return <Badge pill bg="danger" className="px-3 py-2 shadow-sm">Cancelled</Badge>;
+      case "COMPLETED": return <Badge pill bg="info" className="px-3 py-2 shadow-sm">Completed</Badge>;
+      default: return <Badge pill bg="secondary" className="px-3 py-2 shadow-sm">{status}</Badge>;
     }
   };
 
@@ -118,47 +118,69 @@ const Dashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="text-center mt-5">
-        <Spinner animation="border" variant="primary" />
+      <div className="d-flex flex-column justify-content-center align-items-center" style={{ minHeight: "60vh" }}>
+        <Spinner animation="grow" variant="primary" className="mb-3" />
+        <h5 className="text-muted">Loading your adventures...</h5>
       </div>
     );
   }
 
   return (
-    <Container>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Welcome, {user?.email}</h2>
-        <Button as={Link} to="/destinations" variant="outline-primary">
-          Plan a New Trip
+    <Container className="py-5">
+      
+      {/* Header Section */}
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5">
+        <div>
+          <h2 className="fw-bold mb-1">Welcome back, {user?.email?.split('@')[0] || 'Traveler'} 👋</h2>
+          <p className="text-muted mb-0">Manage your upcoming adventures and travel history.</p>
+        </div>
+        <Button 
+          as={Link} 
+          to="/destinations" 
+          variant="primary" 
+          size="lg" 
+          className="mt-4 mt-md-0 px-4 rounded-pill shadow-sm"
+        >
+          ✨ Plan a New Trip
         </Button>
       </div>
 
-      {error && <Alert variant="danger">{error}</Alert>}
+      {error && <Alert variant="danger" className="rounded-3 shadow-sm">{error}</Alert>}
 
+      {/* Analytics Cards */}
       <Row className="mb-5 g-4">
         <Col md={4}>
-          <Card className="shadow-sm border-0 bg-light text-center h-100">
-            <Card.Body className="py-4">
-              <h5 className="text-muted">Total Trips</h5>
-              <h2 className="display-5 fw-bold">{bookings.length}</h2>
+          <Card className="shadow-sm border-0 rounded-4 bg-white text-center h-100 transition-hover">
+            <Card.Body className="py-4 d-flex flex-column align-items-center justify-content-center">
+              <div className="bg-light p-3 rounded-circle mb-3 d-inline-block">
+                <span className="fs-3">🧳</span>
+              </div>
+              <h6 className="text-muted fw-bold text-uppercase tracking-wider">Total Trips</h6>
+              <h2 className="display-6 fw-bolder mb-0 text-dark">{bookings.length}</h2>
             </Card.Body>
           </Card>
         </Col>
         <Col md={4}>
-          <Card className="shadow-sm border-0 bg-light text-center h-100">
-            <Card.Body className="py-4">
-              <h5 className="text-muted">Active Bookings</h5>
-              <h2 className="display-5 fw-bold text-primary">
+          <Card className="shadow-sm border-0 rounded-4 bg-white text-center h-100 transition-hover">
+            <Card.Body className="py-4 d-flex flex-column align-items-center justify-content-center">
+              <div className="bg-primary bg-opacity-10 p-3 rounded-circle mb-3 d-inline-block">
+                <span className="fs-3">✈️</span>
+              </div>
+              <h6 className="text-muted fw-bold text-uppercase tracking-wider">Active Bookings</h6>
+              <h2 className="display-6 fw-bolder mb-0 text-primary">
                 {bookings.filter((b) => b.status === "CONFIRMED").length}
               </h2>
             </Card.Body>
           </Card>
         </Col>
         <Col md={4}>
-          <Card className="shadow-sm border-0 bg-light text-center h-100">
-            <Card.Body className="py-4">
-              <h5 className="text-muted">Total Spent</h5>
-              <h2 className="display-5 fw-bold text-success">
+          <Card className="shadow-sm border-0 rounded-4 bg-white text-center h-100 transition-hover">
+            <Card.Body className="py-4 d-flex flex-column align-items-center justify-content-center">
+              <div className="bg-success bg-opacity-10 p-3 rounded-circle mb-3 d-inline-block">
+                <span className="fs-3">💳</span>
+              </div>
+              <h6 className="text-muted fw-bold text-uppercase tracking-wider">Total Spent</h6>
+              <h2 className="display-6 fw-bolder mb-0 text-success">
                 ${totalSpent.toFixed(2)}
               </h2>
             </Card.Body>
@@ -166,51 +188,59 @@ const Dashboard = () => {
         </Col>
       </Row>
 
-      <h4 className="mb-3">Your Travel History</h4>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h4 className="fw-bold mb-0">Your Travel History</h4>
+      </div>
 
       {bookings.length === 0 ? (
-        <Card className="text-center py-5 shadow-sm border-0 bg-light">
-          <Card.Body>
-            <h4 className="text-muted mb-3">You haven't booked any trips yet.</h4>
-            <Button as={Link} to="/destinations" variant="primary" size="lg">
+        <Card className="text-center py-5 shadow-sm border-0 rounded-4 bg-white">
+          <Card.Body className="py-5">
+            <div className="display-1 text-muted mb-4">🌍</div>
+            <h4 className="text-dark fw-bold mb-3">You haven't booked any trips yet.</h4>
+            <p className="text-muted mb-4">The world is waiting! Start exploring our top destinations.</p>
+            <Button as={Link} to="/destinations" variant="primary" size="lg" className="rounded-pill px-5 shadow-sm">
               Explore Destinations
             </Button>
           </Card.Body>
         </Card>
       ) : (
-        <Card className="shadow-sm border-0">
-          <Table responsive hover className="mb-0">
-            <thead className="bg-light">
-              <tr>
-                <th>Booking Ref #</th>
-                <th>Check-in</th>
-                <th>Check-out</th>
-                <th>Total Cost</th>
-                <th>Status</th>
-                <th>Actions</th>
+        <Card className="shadow-sm border-0 rounded-4 overflow-hidden">
+          <Table responsive hover className="mb-0 text-nowrap align-middle">
+            <thead className="bg-light text-muted" style={{ fontSize: '0.85rem' }}>
+              <tr className="text-uppercase">
+                <th className="py-3 ps-4 border-0">Booking Ref #</th>
+                <th className="py-3 border-0">Check-in</th>
+                <th className="py-3 border-0">Check-out</th>
+                <th className="py-3 border-0">Total Cost</th>
+                <th className="py-3 border-0">Status</th>
+                <th className="py-3 pe-4 border-0 text-end">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="border-top-0">
               {bookings.map((booking) => (
-                <tr key={booking.id} className="align-middle">
-                  <td><strong>#{booking.id.toString().padStart(4, "0")}</strong></td>
-                  <td>{booking.check_in_date}</td>
-                  <td>{booking.check_out_date}</td>
-                  <td>${parseFloat(booking.total_amount).toFixed(2)}</td>
+                <tr key={booking.id} className="bg-white">
+                  <td className="py-3 ps-4">
+                    <strong className="text-primary">#{booking.id.toString().padStart(4, "0")}</strong>
+                  </td>
+                  <td className="py-3 text-muted">{booking.check_in_date}</td>
+                  <td className="py-3 text-muted">{booking.check_out_date}</td>
+                  <td className="py-3 fw-semibold">${parseFloat(booking.total_amount).toFixed(2)}</td>
                   
-                  <td>
-                    {getStatusBadge(booking.status)}
-                    {/* NEW: Stripe Paid Badge */}
-                    {booking.is_paid && <Badge bg="success" className="ms-2">Paid</Badge>}
+                  <td className="py-3">
+                    <div className="d-flex align-items-center gap-2">
+                      {getStatusBadge(booking.status)}
+                      {/* NEW: Stripe Paid Badge */}
+                      {booking.is_paid && <Badge pill bg="success" className="px-3 py-2 shadow-sm"><i className="bi bi-check-circle me-1"></i> Paid</Badge>}
+                    </div>
                   </td>
                   
-                  <td>
+                  <td className="py-3 pe-4 text-end">
                     {/* NEW: Pay Now Button directly in the table row */}
                     {booking.status === 'CONFIRMED' && !booking.is_paid && (
                         <Button 
                             variant="primary" 
                             size="sm" 
-                            className="me-2" 
+                            className="me-2 rounded-pill px-3 shadow-sm fw-semibold" 
                             onClick={() => handlePayClick(booking)}
                         >
                             💳 Pay Now
@@ -218,8 +248,9 @@ const Dashboard = () => {
                     )}
                     
                     <Button
-                      variant="outline-secondary"
+                      variant="light"
                       size="sm"
+                      className="rounded-pill px-3 fw-semibold border shadow-sm"
                       onClick={() => handleViewDetails(booking)}
                     >
                       View Details
@@ -233,68 +264,79 @@ const Dashboard = () => {
       )}
 
       {/* --- MODAL 1: Booking Details --- */}
-      <Modal show={showDetailsModal} onHide={handleCloseDetailsModal} centered>
+      <Modal show={showDetailsModal} onHide={handleCloseDetailsModal} centered size="lg">
         {selectedBooking && (
           <>
-            <Modal.Header closeButton className="bg-light">
-              <Modal.Title>
-                Booking #{selectedBooking.id.toString().padStart(4, "0")}
+            <Modal.Header closeButton className="bg-light border-0 py-4 px-4 rounded-top-4">
+              <Modal.Title className="fw-bold text-primary">
+                Booking Reference #{selectedBooking.id.toString().padStart(4, "0")}
               </Modal.Title>
             </Modal.Header>
-            <Modal.Body className="p-4">
-              <div className="d-flex justify-content-between align-items-center mb-4">
-                <h5 className="mb-0">Status</h5>
-                <div>
+            <Modal.Body className="p-4 p-md-5">
+              
+              <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 bg-light p-3 rounded-4">
+                <h6 className="mb-0 text-muted fw-bold text-uppercase">Current Status</h6>
+                <div className="d-flex gap-2 mt-2 mt-sm-0">
                     {getStatusBadge(selectedBooking.status)}
-                    {selectedBooking.is_paid && <Badge bg="success" className="ms-2">Paid</Badge>}
+                    {selectedBooking.is_paid && <Badge pill bg="success" className="px-3 py-2 shadow-sm">Paid</Badge>}
                 </div>
               </div>
 
-              <h6 className="text-muted text-uppercase mb-3" style={{ fontSize: "0.85rem" }}>
+              <h6 className="text-primary fw-bold text-uppercase tracking-wider mb-3">
                 Itinerary Details
               </h6>
-              <ListGroup variant="flush" className="mb-4 border rounded">
-                <ListGroup.Item className="d-flex justify-content-between">
-                  <span>Check-in:</span>
-                  <strong>{selectedBooking.check_in_date}</strong>
+              
+              <ListGroup variant="flush" className="mb-4 border rounded-4 overflow-hidden shadow-sm">
+                <ListGroup.Item className="d-flex justify-content-between align-items-center py-3">
+                  <span className="text-muted">Check-in Date:</span>
+                  <strong className="fs-6">{selectedBooking.check_in_date}</strong>
                 </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between">
-                  <span>Check-out:</span>
-                  <strong>{selectedBooking.check_out_date}</strong>
+                <ListGroup.Item className="d-flex justify-content-between align-items-center py-3">
+                  <span className="text-muted">Check-out Date:</span>
+                  <strong className="fs-6">{selectedBooking.check_out_date}</strong>
                 </ListGroup.Item>
                 {selectedBooking.accommodation_name && (
-                  <ListGroup.Item className="d-flex justify-content-between">
-                    <span>Hotel:</span>
-                    <strong className="text-end">{selectedBooking.accommodation_name}</strong>
+                  <ListGroup.Item className="d-flex justify-content-between align-items-center py-3">
+                    <span className="text-muted">Accommodation:</span>
+                    <strong className="text-end fs-6">{selectedBooking.accommodation_name}</strong>
                   </ListGroup.Item>
                 )}
                 {selectedBooking.tour_package_name && (
-                  <ListGroup.Item className="d-flex justify-content-between">
-                    <span>Tour Package:</span>
-                    <strong className="text-end">{selectedBooking.tour_package_name}</strong>
+                  <ListGroup.Item className="d-flex justify-content-between align-items-center py-3">
+                    <span className="text-muted">Tour Package:</span>
+                    <strong className="text-end fs-6">{selectedBooking.tour_package_name}</strong>
                   </ListGroup.Item>
                 )}
-                <ListGroup.Item className="d-flex justify-content-between">
-                  <span>Destination:</span>
-                  <strong>{selectedBooking.destination_name}</strong>
+                <ListGroup.Item className="d-flex justify-content-between align-items-center py-3 bg-light">
+                  <span className="text-muted">Destination:</span>
+                  <strong className="fs-6">{selectedBooking.destination_name}</strong>
                 </ListGroup.Item>
               </ListGroup>
 
-              <div className="d-flex justify-content-between align-items-center p-3 bg-light rounded border">
-                <h5 className="mb-0">Total Amount</h5>
-                <h4 className="mb-0 text-success fw-bold">
+              <div className="d-flex justify-content-between align-items-center p-4 bg-success bg-opacity-10 rounded-4 border border-success border-opacity-25">
+                <h5 className="mb-0 text-dark fw-bold">Total Amount</h5>
+                <h3 className="mb-0 text-success fw-bolder">
                   ${parseFloat(selectedBooking.total_amount).toFixed(2)}
-                </h4>
+                </h3>
               </div>
             </Modal.Body>
-            <Modal.Footer className="d-flex justify-content-between">
+            <Modal.Footer className="d-flex justify-content-between border-0 px-4 pb-4 pt-0">
               {selectedBooking.status === "PENDING" || selectedBooking.status === "CONFIRMED" ? (
-                <Button variant="outline-danger" onClick={handleCancelBooking} disabled={isCancelling}>
-                  {isCancelling ? <Spinner size="sm" animation="border" /> : "Cancel Booking"}
+                <Button 
+                  variant="outline-danger" 
+                  className="rounded-pill px-4 fw-semibold"
+                  onClick={handleCancelBooking} 
+                  disabled={isCancelling}
+                >
+                  {isCancelling ? (
+                    <><Spinner size="sm" animation="border" className="me-2" /> Cancelling...</>
+                  ) : (
+                    "Cancel Booking"
+                  )}
                 </Button>
               ) : <div></div>}
-              <Button variant="secondary" onClick={handleCloseDetailsModal}>
-                Close
+              <Button variant="secondary" className="rounded-pill px-4 fw-semibold shadow-sm" onClick={handleCloseDetailsModal}>
+                Close Window
               </Button>
             </Modal.Footer>
           </>

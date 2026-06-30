@@ -4,6 +4,7 @@ from .models import Manager
 from rest_framework import serializers
 from .models import BaseUser, Citizen
 
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         # Run the standard validation (checks email/password)
@@ -101,3 +102,4 @@ class RegisterSerializer(serializers.ModelSerializer):
             )
 
         return user
+    
