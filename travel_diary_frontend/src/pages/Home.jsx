@@ -1,98 +1,202 @@
-import { Container, Row, Col, Button, Card } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Container, Row, Col, Button, Card } from "react-bootstrap";
+import { Link } from "react-router-dom";
+
+const featureCardStyle = {
+  border: "none",
+  borderRadius: "22px",
+  background: "rgba(255,255,255,0.92)",
+  backdropFilter: "blur(10px)",
+  boxShadow: "0 15px 40px rgba(0,0,0,0.08)",
+  transition: "all .35s ease",
+};
 
 const Home = () => {
-    return (
-        <div className="home-page">
-            {/* 1. HERO SECTION */}
-            <div 
-                className="hero-section text-white text-center d-flex align-items-center justify-content-center"
-                style={{
-                    // Using a high-quality Unsplash image for the background
-                    backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(https://source.unsplash.com/1600x900/?travel,landscape)',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    minHeight: '70vh',
-                    borderRadius: '8px',
-                    marginTop: '-24px', // Pulls it up flush against the layout padding
-                    marginBottom: '4rem'
-                }}
+  return (
+    <div className="home-page">
+      {/* Hero */}
+      <section
+        className="d-flex align-items-center text-white position-relative overflow-hidden"
+        style={{
+          minHeight: "82vh",
+          marginTop: "-24px",
+          marginBottom: "5rem",
+          borderRadius: "0 0 40px 40px",
+          backgroundImage:
+            "linear-gradient(135deg, rgba(15,23,42,.82), rgba(37,99,235,.65)), url(https://source.unsplash.com/1600x900/?travel,landscape)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <Container className="text-center">
+          <span
+            className="px-3 py-2 rounded-pill fw-semibold"
+            style={{
+              background: "rgba(255,255,255,.15)",
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            ✈️ AI Powered Travel Planning
+          </span>
+
+          <h1
+            className="display-2 fw-bold mt-4"
+            style={{ lineHeight: 1.1 }}
+          >
+            Discover Your Next
+            <br />
+            Dream Destination
+          </h1>
+
+          <p
+            className="lead mx-auto mt-4 mb-5"
+            style={{
+              maxWidth: "760px",
+              fontSize: "1.25rem",
+              opacity: ".92",
+            }}
+          >
+            Plan, budget and book unforgettable journeys with intelligent
+            recommendations, real-time estimates and secure booking—all from
+            one beautiful platform.
+          </p>
+
+          <div className="d-flex justify-content-center gap-3 flex-wrap">
+            <Button
+              as={Link}
+              to="/destinations"
+              size="lg"
+              className="rounded-pill px-5 py-3 fw-bold border-0"
+              style={{
+                background:
+                  "linear-gradient(135deg,#4f46e5,#2563eb)",
+                boxShadow: "0 12px 30px rgba(37,99,235,.35)",
+              }}
             >
-                <Container>
-                    <h1 className="display-3 fw-bold mb-4">Your Ultimate Travel Companion</h1>
-                    <p className="lead mb-5 fs-4 mx-auto" style={{ maxWidth: '700px' }}>
-                        Plan, budget, and book your dream vacation all in one place. 
-                        Let our intelligent AI guide you to your next great adventure.
-                    </p>
-                    <Button as={Link} to="/destinations" variant="primary" size="lg" className="px-5 py-3 fw-bold rounded-pill">
-                        Start Exploring Destinations
-                    </Button>
-                </Container>
-            </div>
+              Explore Destinations
+            </Button>
 
-            {/* 2. CORE FEATURES SECTION */}
-            <Container className="mb-5 py-5">
-                <div className="text-center mb-5">
-                    <h2 className="fw-bold">Why Choose Travel Diary?</h2>
-                    <p className="text-muted">Everything you need for a seamless journey.</p>
-                </div>
+            <Button
+              as={Link}
+              to="/login"
+              variant="light"
+              size="lg"
+              className="rounded-pill px-5 py-3 fw-bold"
+            >
+              Sign In
+            </Button>
+          </div>
+        </Container>
+      </section>
 
-                <Row className="g-4 text-center">
-                    <Col md={4}>
-                        <Card className="h-100 border-0 shadow-sm p-4 hover-effect">
-                            <Card.Body>
-                                <div className="display-4 mb-3">🤖</div>
-                                <Card.Title className="fw-bold">AI Recommendations</Card.Title>
-                                <Card.Text className="text-muted">
-                                    Our machine learning engine analyzes your preferences and destination details to suggest the perfect spots tailored just for you.
-                                </Card.Text>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                    
-                    <Col md={4}>
-                        <Card className="h-100 border-0 shadow-sm p-4 hover-effect">
-                            <Card.Body>
-                                <div className="display-4 mb-3">💰</div>
-                                <Card.Title className="fw-bold">Live Budget Estimation</Card.Title>
-                                <Card.Text className="text-muted">
-                                    No more spreadsheet math. Select your dates and accommodations to see real-time, accurate cost estimations before you book.
-                                </Card.Text>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-
-                    <Col md={4}>
-                        <Card className="h-100 border-0 shadow-sm p-4 hover-effect">
-                            <Card.Body>
-                                <div className="display-4 mb-3">🏨</div>
-                                <Card.Title className="fw-bold">Secure Booking</Card.Title>
-                                <Card.Text className="text-muted">
-                                    Instantly reserve top-rated hotels and curated tour packages directly from verified local managers and operators.
-                                </Card.Text>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                </Row>
-            </Container>
-
-            {/* 3. CALL TO ACTION (BOTTOM) */}
-            <div className="bg-light rounded p-5 text-center mb-5 shadow-sm">
-                <h3 className="fw-bold mb-3">Ready to pack your bags?</h3>
-                <p className="text-muted mb-4 fs-5">
-                    Join thousands of travelers who have simplified their travel planning.
-                </p>
-                <div className="d-flex justify-content-center gap-3">
-                    <Button as={Link} to="/destinations" variant="primary" size="lg">
-                        Browse Destinations
-                    </Button>
-                    <Button as={Link} to="/login" variant="outline-dark" size="lg">
-                        Sign In to Your Account
-                    </Button>
-                </div>
-            </div>
+      {/* Features */}
+      <Container className="py-5">
+        <div className="text-center mb-5">
+          <h2 className="fw-bold display-5">Why Choose Travel Diary?</h2>
+          <p className="text-secondary fs-5">
+            Everything you need for a seamless travel experience.
+          </p>
         </div>
-    );
+
+        <Row className="g-4">
+          {[
+            {
+              icon: "🤖",
+              title: "AI Recommendations",
+              text:
+                "Smart destination suggestions tailored to your interests and travel style.",
+            },
+            {
+              icon: "💰",
+              title: "Live Budget Estimation",
+              text:
+                "Instantly calculate trip costs with accurate real-time estimates.",
+            },
+            {
+              icon: "🏨",
+              title: "Secure Booking",
+              text:
+                "Book trusted accommodations and curated tour packages with confidence.",
+            },
+          ].map((item) => (
+            <Col md={4} key={item.title}>
+              <Card
+                className="h-100 text-center p-4"
+                style={featureCardStyle}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform =
+                    "translateY(-10px)";
+                  e.currentTarget.style.boxShadow =
+                    "0 25px 50px rgba(37,99,235,.15)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow =
+                    "0 15px 40px rgba(0,0,0,.08)";
+                }}
+              >
+                <Card.Body>
+                  <div className="display-3 mb-4">{item.icon}</div>
+                  <Card.Title className="fw-bold fs-3">
+                    {item.title}
+                  </Card.Title>
+                  <Card.Text className="text-secondary mt-3">
+                    {item.text}
+                  </Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      </Container>
+
+      {/* CTA */}
+      <Container className="pb-5">
+        <div
+          className="text-center text-white p-5"
+          style={{
+            borderRadius: "28px",
+            background:
+              "linear-gradient(135deg,#1e3a8a,#2563eb,#4f46e5)",
+            boxShadow: "0 20px 50px rgba(37,99,235,.25)",
+          }}
+        >
+          <h2 className="fw-bold mb-3">
+            Ready for Your Next Adventure?
+          </h2>
+
+          <p
+            className="mx-auto mb-4"
+            style={{ maxWidth: "650px", opacity: ".9" }}
+          >
+            Join thousands of travelers using Travel Diary to discover,
+            organize and experience unforgettable journeys.
+          </p>
+
+          <div className="d-flex justify-content-center gap-3 flex-wrap">
+            <Button
+              as={Link}
+              to="/destinations"
+              variant="light"
+              size="lg"
+              className="rounded-pill px-4 fw-bold"
+            >
+              Browse Destinations
+            </Button>
+
+            <Button
+              as={Link}
+              to="/login"
+              variant="outline-light"
+              size="lg"
+              className="rounded-pill px-4 fw-bold"
+            >
+              Sign In
+            </Button>
+          </div>
+        </div>
+      </Container>
+    </div>
+  );
 };
 
 export default Home;
