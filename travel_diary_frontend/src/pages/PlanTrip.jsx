@@ -9,6 +9,8 @@ import {
   Button,
   Spinner,
   Alert,
+  Badge,
+  ListGroup,
 } from "react-bootstrap";
 import api from "../services/api";
 
@@ -179,125 +181,154 @@ const PlanTrip = () => {
 
   if (isPageLoading) {
     return (
-      <div className="text-center mt-5">
-        <Spinner animation="border" />
+      <div className="d-flex flex-column align-items-center justify-content-center min-vh-50 py-5">
+        <Spinner animation="border" variant="primary" />
+        <p className="text-muted mt-3">Loading trip options...</p>
       </div>
     );
   }
 
   return (
-    <Container>
-      <h2 className="mb-4">Plan Your Trip</h2>
+    <Container className="py-4">
+      {/* Header */}
+      <div className="mb-4">
+        <h2 className="fw-bold mb-1">Plan Your Trip</h2>
+        <p className="text-muted">Customize your travel experience below</p>
+      </div>
 
-      {error && <Alert variant="danger">{error}</Alert>}
+      {error && (
+        <Alert variant="danger" dismissible onClose={() => setError(null)} className="shadow-sm">
+          {error}
+        </Alert>
+      )}
 
-      <Row>
+      <Row className="g-4">
         {/* LEFT COLUMN */}
-        <Col md={8}>
-          <Card className="shadow-sm mb-4">
-            <Card.Body>
+        <Col lg={8}>
+          <Card className="shadow-sm border-0">
+            <Card.Body className="p-4">
               <Form onSubmit={handleSubmit}>
                 {/* Travel Dates */}
-                <h5 className="mb-3">1. Travel Dates</h5>
+                <div className="mb-4">
+                  <div className="d-flex align-items-center gap-2 mb-3">
+                    <Badge bg="primary" className="rounded-circle" style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      1
+                    </Badge>
+                    <h5 className="mb-0 fw-semibold">Travel Dates</h5>
+                  </div>
 
-                <Row className="mb-4">
-                  <Col>
-                    <Form.Group>
-                      <Form.Label>Check-in Date</Form.Label>
+                  <Row className="g-3">
+                    <Col md={6}>
+                      <Form.Group>
+                        <Form.Label className="fw-medium text-secondary small text-uppercase">
+                          Check-in Date
+                        </Form.Label>
+                        <Form.Control
+                          type="date"
+                          value={checkIn}
+                          onChange={(e) => setCheckIn(e.target.value)}
+                          required
+                          className="py-2"
+                        />
+                      </Form.Group>
+                    </Col>
 
-                      <Form.Control
-                        type="date"
-                        value={checkIn}
-                        onChange={(e) => setCheckIn(e.target.value)}
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
+                    <Col md={6}>
+                      <Form.Group>
+                        <Form.Label className="fw-medium text-secondary small text-uppercase">
+                          Check-out Date
+                        </Form.Label>
+                        <Form.Control
+                          type="date"
+                          value={checkOut}
+                          onChange={(e) => setCheckOut(e.target.value)}
+                          required
+                          disabled={isCheckoutLocked}
+                          className={isCheckoutLocked ? "bg-light" : ""}
+                        />
+                        {isCheckoutLocked && (
+                          <Form.Text className="text-muted small">
+                            <i className="bi bi-info-circle me-1"></i>
+                            Auto-calculated from tour package duration
+                          </Form.Text>
+                        )}
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                </div>
 
-                  <Col>
-                    <Form.Group>
-                      <Form.Label>Check-out Date</Form.Label>
-
-                      <Form.Control
-                        type="date"
-                        value={checkOut}
-                        onChange={(e) => setCheckOut(e.target.value)}
-                        required
-                        disabled={isCheckoutLocked}
-                      />
-
-                      {isCheckoutLocked && (
-                        <Form.Text className="text-muted">
-                          Check-out date is automatically calculated from the
-                          selected tour package.
-                        </Form.Text>
-                      )}
-                    </Form.Group>
-                  </Col>
-                </Row>
+                <hr className="my-4 opacity-25" />
 
                 {/* Hotels & Packages */}
-                <h5 className="mb-3">2. Accommodation & Activities</h5>
+                <div className="mb-4">
+                  <div className="d-flex align-items-center gap-2 mb-3">
+                    <Badge bg="primary" className="rounded-circle" style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      2
+                    </Badge>
+                    <h5 className="mb-0 fw-semibold">Accommodation & Activities</h5>
+                  </div>
 
-                {/* Hotel Selection */}
-                <Form.Group className="mb-3">
-                  <Form.Label>Select a Hotel</Form.Label>
+                  {/* Hotel Selection */}
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-medium">Select a Hotel</Form.Label>
+                    <Form.Select
+                      value={selectedAcc}
+                      onChange={(e) => {
+                        setSelectedAcc(e.target.value);
+                        setSelectedPkg("");
+                        setIsCheckoutLocked(false);
+                      }}
+                      className="py-2"
+                    >
+                      <option value="">None — I'll arrange my own stay</option>
+                      {accommodations.map((acc) => (
+                        <option key={acc.id} value={acc.id}>
+                          {acc.name} — ${acc.price_per_night}/night
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
 
-                  <Form.Select
-                    value={selectedAcc}
-                    onChange={(e) => {
-                      setSelectedAcc(e.target.value);
+                  <div className="text-center my-3">
+                    <Badge bg="secondary" className="px-3 py-1 rounded-pill text-uppercase small fw-semibold opacity-75">
+                      OR
+                    </Badge>
+                  </div>
 
-                      // Clear package
-                      setSelectedPkg("");
-
-                      // Unlock checkout
-                      setIsCheckoutLocked(false);
-                    }}
-                  >
-                    <option value="">None</option>
-
-                    {accommodations.map((acc) => (
-                      <option key={acc.id} value={acc.id}>
-                        {acc.name} - ${acc.price_per_night}/night
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
-
-                {/* Package Selection */}
-                <Form.Group className="mb-4">
-                  <Form.Label>OR Select a Tour Package</Form.Label>
-
-                  <Form.Select
-                    value={selectedPkg}
-                    onChange={(e) => {
-                      setSelectedPkg(e.target.value);
-
-                      // Clear hotel
-                      setSelectedAcc("");
-                    }}
-                  >
-                    <option value="">None</option>
-
-                    {tourPackages.map((pkg) => (
-                      <option key={pkg.id} value={pkg.id}>
-                        {pkg.title} - ${pkg.total_price} flat
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
+                  {/* Package Selection */}
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-medium">Select a Tour Package</Form.Label>
+                    <Form.Select
+                      value={selectedPkg}
+                      onChange={(e) => {
+                        setSelectedPkg(e.target.value);
+                        setSelectedAcc("");
+                      }}
+                      className="py-2"
+                    >
+                      <option value="">None — I'll plan my own activities</option>
+                      {tourPackages.map((pkg) => (
+                        <option key={pkg.id} value={pkg.id}>
+                          {pkg.title} — ${pkg.total_price} flat
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                </div>
 
                 {/* Submit Button */}
                 <Button
                   variant="primary"
                   type="submit"
                   size="lg"
-                  className="w-100"
+                  className="w-100 rounded-3 fw-semibold py-3"
                   disabled={isSubmitting || !estimatedTotal}
                 >
                   {isSubmitting ? (
-                    <Spinner size="sm" animation="border" />
+                    <>
+                      <Spinner size="sm" animation="border" className="me-2" />
+                      Processing...
+                    </>
                   ) : (
                     "Confirm Booking"
                   )}
@@ -308,45 +339,72 @@ const PlanTrip = () => {
         </Col>
 
         {/* RIGHT COLUMN */}
-        <Col md={4}>
-          <Card
-            className="shadow-sm border-primary"
-            style={{
-              position: "sticky",
-              top: "20px",
-            }}
-          >
-            <Card.Header className="bg-primary text-white">
-              <h5 className="mb-0">Live Price Summary</h5>
-            </Card.Header>
+        <Col lg={4}>
+          <div style={{ position: "sticky", top: "24px" }}>
+            <Card className="shadow-sm border-0 overflow-hidden">
+              <Card.Header className="bg-primary text-white border-0 py-3">
+                <h5 className="mb-0 fw-semibold">
+                  <span role="img" aria-label="receipt" className="me-2">🧾</span>
+                  Price Summary
+                </h5>
+              </Card.Header>
 
-            <Card.Body className="text-center py-5">
-              {isEstimating ? (
-                <div>
-                  <Spinner
-                    animation="grow"
-                    variant="primary"
-                    className="mb-2"
-                  />
+              <Card.Body className="p-4">
+                {isEstimating ? (
+                  <div className="text-center py-4">
+                    <Spinner animation="border" variant="primary" className="mb-3" />
+                    <p className="text-muted mb-0">Calculating your estimate...</p>
+                  </div>
+                ) : estimatedTotal ? (
+                  <div className="text-center py-2">
+                    <p className="text-muted small text-uppercase fw-semibold mb-2">
+                      Estimated Total
+                    </p>
+                    <h1 className="display-4 fw-bold text-success mb-2">
+                      ${estimatedTotal}
+                    </h1>
+                    <Badge bg="success" className="rounded-pill px-3 py-2">
+                      Ready to Book
+                    </Badge>
 
-                  <p className="text-muted">Calculating...</p>
-                </div>
-              ) : estimatedTotal ? (
-                <div>
-                  <h1 className="display-4 fw-bold text-success">
-                    ${estimatedTotal}
-                  </h1>
+                    <ListGroup variant="flush" className="mt-4 text-start small">
+                      <ListGroup.Item className="px-0 py-2 d-flex justify-content-between border-0 border-bottom">
+                        <span className="text-muted">Check-in</span>
+                        <span className="fw-medium">{checkIn || '—'}</span>
+                      </ListGroup.Item>
+                      <ListGroup.Item className="px-0 py-2 d-flex justify-content-between border-0 border-bottom">
+                        <span className="text-muted">Check-out</span>
+                        <span className="fw-medium">{checkOut || '—'}</span>
+                      </ListGroup.Item>
+                      <ListGroup.Item className="px-0 py-2 d-flex justify-content-between border-0">
+                        <span className="text-muted">Selection</span>
+                        <span className="fw-medium">
+                          {selectedAcc ? 'Hotel' : selectedPkg ? 'Tour Package' : '—'}
+                        </span>
+                      </ListGroup.Item>
+                    </ListGroup>
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <div className="mb-3">
+                      <span role="img" aria-label="calendar" style={{ fontSize: '2.5rem' }}>📅</span>
+                    </div>
+                    <p className="text-muted mb-0">
+                      Select your dates and choose a hotel or tour package to see your live estimate.
+                    </p>
+                  </div>
+                )}
+              </Card.Body>
+            </Card>
 
-                  <p className="text-muted mb-0">Total Estimated Cost</p>
-                </div>
-              ) : (
-                <p className="text-muted mb-0">
-                  Select your dates and a hotel/package to see the live
-                  estimate.
-                </p>
-              )}
-            </Card.Body>
-          </Card>
+            {/* Trust indicators */}
+            <div className="mt-3 text-center">
+              <small className="text-muted">
+                <span role="img" aria-label="shield" className="me-1">🔒</span>
+                Secure booking • Free cancellation
+              </small>
+            </div>
+          </div>
         </Col>
       </Row>
     </Container>

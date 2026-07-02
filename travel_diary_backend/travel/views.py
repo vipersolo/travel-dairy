@@ -356,6 +356,7 @@ class BookingViewSet(viewsets.ModelViewSet):
             try:
                 stripe.Refund.create(payment_intent=booking.stripe_payment_intent)
                 booking.is_paid = False # Money returned
+                booking.is_refunded = True # Refund Flag set to True
             except Exception as e:
                 return Response({"error": f"Refund failed: {str(e)}"}, status=400)
 

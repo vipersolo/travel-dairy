@@ -279,11 +279,14 @@ const Dashboard = () => {
                 <div className="d-flex gap-2 mt-2 mt-sm-0">
                     {getStatusBadge(selectedBooking.status)}
                     {selectedBooking.is_paid && <Badge pill bg="success" className="px-3 py-2 shadow-sm">Paid</Badge>}
+                    {selectedBooking?.is_refunded && <Badge pill bg="secondary" className="px-3 py-2 shadow-sm" >Refunded</Badge>}
+                  
+                    {/* {selectedBooking.is_refunded && <Badge pill bg="bg-info" className="px-3 py-2 shadow-sm">Refunded</Badge>} */}
                 </div>
               </div>
 
               <h6 className="text-primary fw-bold text-uppercase tracking-wider mb-3">
-                Itinerary Details
+                Itinerary Details 
               </h6>
               
               <ListGroup variant="flush" className="mb-4 border rounded-4 overflow-hidden shadow-sm">

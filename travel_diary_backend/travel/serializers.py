@@ -47,8 +47,8 @@ class BookingSerializer(serializers.ModelSerializer):
         model = Booking
         fields = ['id', 'citizen','citizen_details', 'accommodation', 'tour_package', 
                   'check_in_date', 'check_out_date', 'total_amount', 
-                  'status', 'is_paid', 'stripe_payment_intent', 'created_at','accommodation_name','tour_package_name','destination_name']
-        read_only_fields = ['citizen', 'manager', 'total_amount', 'status', 'is_paid', 'stripe_payment_intent']
+                  'status', 'is_paid','is_refunded', 'stripe_payment_intent', 'created_at','accommodation_name','tour_package_name','destination_name']
+        read_only_fields = ['citizen', 'manager', 'total_amount', 'status', 'is_paid', 'stripe_payment_intent','is_refunded']
 
     def get_destination_name(self, obj):
         if obj.accommodation:
